@@ -108,13 +108,14 @@ export type FeatureConfig = {
 	terminal: boolean;
 	weatherBg: boolean;
 	musicPlayer: boolean;
-	bangumi: boolean;
 	dashboard: boolean;
 	comments: boolean;
 	sakura: boolean;
 	clickBurst: boolean;
 	typewriter: boolean;
 	hitokoto: boolean;
+	loadingScreen: boolean;
+	cursorGlow: boolean;
 };
 
 export type HeroConfig = {
@@ -129,12 +130,11 @@ export type MusicTrack = {
 };
 
 export type MusicConfig = {
+	/** 网易云音乐歌单 ID：填了优先渲染网易云官方外链播放器 */
+	neteasePlaylistId: string;
+	/** 本地歌单（public/music/），播放时驱动音频律动 */
 	playlist: MusicTrack[];
 	defaultVolume: number; // 0 - 1
-};
-
-export type BangumiConfig = {
-	userId: string; // Bangumi 用户 ID，留空时页面显示引导文案
 };
 
 export type CommentsConfig = {

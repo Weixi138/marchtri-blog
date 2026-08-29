@@ -66,7 +66,7 @@
 				print("  ls                  列出全部文章");
 				print("  read <序号|关键词>   打开一篇文章");
 				print("  theme light|dark|auto  切换主题");
-				print("  cd about|archive|bangumi|dashboard  前往页面");
+				print("  cd about|archive|dashboard        前往页面");
 				print("  whoami | neofetch | date");
 				print("  clear | exit");
 				break;
@@ -88,10 +88,10 @@
 					? posts[idx - 1]
 					: posts.find((p) => p.title.toLowerCase().includes(arg.toLowerCase()));
 				if (hit) {
-					print(`打开《${hit.title}》… 🌸`);
+					print(`打开《${hit.title}》…`);
 					setTimeout(() => navigate(hit.url), 350);
 				} else {
-					print(`找不到「${arg}」对应的文章 :(`);
+					print(`找不到「${arg}」对应的文章`);
 				}
 				break;
 			}
@@ -113,7 +113,6 @@
 				const map: Record<string, string> = {
 					about: "/about/",
 					archive: "/archive/",
-					bangumi: "/bangumi/",
 					dashboard: "/dashboard/",
 					"~": "/",
 					"/": "/",
@@ -122,7 +121,7 @@
 					print(`cd ${arg} …`);
 					setTimeout(() => navigate(map[arg]), 300);
 				} else {
-					print(`cd: 无处可去：${arg || "(空)"} 试试 about / archive / bangumi / dashboard`);
+					print(`cd: 无处可去：${arg || "(空)"} 试试 about / archive / dashboard`);
 				}
 				break;
 			}
@@ -133,17 +132,19 @@
 				open = false;
 				break;
 			case "whoami":
-				print("一位在玻璃花房里写代码的旅人 🌸");
+				print("一位在玻璃花房里写代码的旅人");
 				break;
 			case "date":
 				print(new Date().toString());
 				break;
 			case "neofetch":
-				print("      ╭─────────────╮");
-				print("      │  🌸 sakura  │   OS:      SakuraMist Blog");
-				print("      │  ∧ ∧  (・‿・) │   Shell:   fx-terminal 0.1");
-				print("      ╰─────────────╯   Theme:   Glass × Kawaii");
-				print(`                        Posts:    ${posts.length}`);
+				print("        ,          OS:     SakuraMist Blog");
+				print("     .  |  .       Shell:  fx-terminal 0.1");
+				print("      \\ | /        Theme:  Glass x Kawaii");
+				print("   ---- + ----     Author: MarchTri");
+				print("      / | \\        Uptime: 常开");
+				print("     '  |  `");
+				print(`        '          Posts:  ${posts.length}`);
 				break;
 			default:
 				print(`fx: 未找到命令「${cmd}」，输入 help 看看有什么能用的～`);
@@ -204,7 +205,7 @@
 	}
 
 	onMount(() => {
-		print("欢迎来到 樱雾小筑 伪终端 🌸  输入 help 查看命令。");
+		print("欢迎来到 樱雾小筑 伪终端，输入 help 查看命令。");
 	});
 </script>
 
@@ -224,7 +225,7 @@
 				<i class="w-3 h-3 rounded-full bg-[#febc2e] inline-block"></i>
 				<i class="w-3 h-3 rounded-full bg-[#28c840] inline-block"></i>
 			</span>
-			<span class="ml-2">sakura@mist ~ zsh</span>
+			<span class="ml-2">sakura@marchtri ~ zsh</span>
 			<span class="ml-auto text-xs text-50">按 ` 或 Esc 关闭</span>
 		</div>
 		<div

@@ -10,7 +10,7 @@ export type Precip = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";
 export interface SceneState {
 	period: SkyPeriod;
 	precip: Precip;
-	/** 底部徽标文案，如「🌧 小雨 · 黄昏」 */
+	/** 底部徽标文案，如「小雨 · 黄昏」 */
 	label: string;
 }
 

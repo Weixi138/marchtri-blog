@@ -132,6 +132,28 @@ body {
     font-family: var(--font-cute);
 }
 
+/* 品牌渐变字：站名 / 大标题 */
+.gradient-text {
+    background: linear-gradient(120deg, var(--sakura) 10%, var(--murasaki) 60%, var(--warm) 110%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* 主按钮：渐变底 */
+.btn-primary-grad {
+    background: linear-gradient(120deg, var(--sakura), var(--murasaki));
+    color: #fff;
+    box-shadow: 0 4px 18px color-mix(in srgb, var(--sakura) 35%, transparent);
+    transition: filter .2s var(--ease-out-soft), transform .2s var(--ease-out-soft);
+}
+.btn-primary-grad:hover {
+    filter: brightness(1.08) saturate(1.05);
+}
+.btn-primary-grad:active {
+    transform: scale(.96);
+}
+
 /* 玻璃质感工具类：命令面板 / 终端 / 播放器等自研组件复用 */
 .glass-panel {
     background: var(--bg-glass-strong);
@@ -142,12 +164,17 @@ body {
     -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
 }
 
-/* 卡片 hover 弹性上浮（docs/01 动效原则） */
+/* 卡片 hover：弹性上浮 + 樱色辉光描边 */
 .glass-hover-lift {
-    transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease-out-soft);
+    transition: transform 0.25s var(--ease-spring), box-shadow 0.3s var(--ease-out-soft),
+        border-color 0.3s var(--ease-out-soft);
 }
 .glass-hover-lift:hover {
     transform: translateY(-3px);
+    box-shadow:
+        0 12px 40px color-mix(in srgb, var(--sakura) 22%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--sakura) 35%, transparent) inset;
+    border-color: color-mix(in srgb, var(--sakura) 40%, var(--stroke-glass));
 }
 
 /* 滚动入场：配合 FXManager 的 IntersectionObserver 添加 .in-view */
@@ -164,6 +191,102 @@ body {
     transform: none;
 }
 
+/* Hero 极光 blob：缓慢漂移呼吸 */
+.hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(6px);
+    background: radial-gradient(closest-side, var(--sakura-soft), transparent);
+    animation: fx-blob-drift 16s var(--ease-out-soft) infinite alternate;
+}
+.hero-blob.violet {
+    background: radial-gradient(closest-side, var(--murasaki-soft), transparent);
+    animation-duration: 21s;
+    animation-direction: alternate-reverse;
+}
+@keyframes fx-blob-drift {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+    to {
+        transform: translate(34px, -26px) scale(1.18);
+    }
+}
+
+/* 樱花 SVG 入场绽放（404 / 空状态用） */
+.fx-bloom {
+    animation: fx-bloom-in 0.9s var(--ease-spring) both;
+}
+@keyframes fx-bloom-in {
+    from {
+        transform: scale(0.3) rotate(-40deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+/* 鼠标跟随光晕（桌面端） */
+.fx-cursor-glow {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 45;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(
+        closest-side,
+        color-mix(in srgb, var(--sakura) 16%, transparent),
+        color-mix(in srgb, var(--murasaki) 8%, transparent) 55%,
+        transparent 72%
+    );
+}
+.fx-cursor-glow.active {
+    opacity: 1;
+}
+
+/* 点击涟漪环 */
+.fx-ripple {
+    position: fixed;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 90;
+    border: 2px solid var(--sakura);
+    opacity: 0.75;
+    animation: fx-ripple-out 0.55s var(--ease-out-soft) forwards;
+}
+@keyframes fx-ripple-out {
+    to {
+        transform: scale(5.5);
+        opacity: 0;
+    }
+}
+
+/* 文章阅读进度条 */
+#reading-progress {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 3px;
+    width: 0%;
+    z-index: 95;
+    border-radius: 0 999px 999px 0;
+    background: linear-gradient(90deg, var(--sakura), var(--murasaki), var(--warm));
+    box-shadow: 0 0 10px color-mix(in srgb, var(--sakura) 45%, transparent);
+    pointer-events: none;
+    transition: width 0.1s linear;
+}
+
 /* reduced-motion：静态但完整（docs/02 降级矩阵） */
 @media (prefers-reduced-motion: reduce) {
     .reveal {
@@ -175,6 +298,12 @@ body {
     .glass-hover-lift:hover {
         transform: none;
         transition: none;
+    }
+    .hero-blob,
+    .fx-cursor-glow,
+    .fx-ripple {
+        animation: none;
+        display: none;
     }
 }
 

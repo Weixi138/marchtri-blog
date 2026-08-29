@@ -1,10 +1,16 @@
 ---
 /**
  * 音乐播放器挂载点（docs/03 P1-3）。
+ * 网易云歌单 ID 优先；本地曲库作为备用模式。
  */
-import { featureConfig, musicConfig } from "../config";
 import Player from "./MusicPlayer.svelte";
+import { featureConfig, musicConfig } from "../config";
 ---
-{featureConfig.musicPlayer && musicConfig.playlist.length > 0 && (
-	<Player client:idle playlist={musicConfig.playlist} defaultVolume={musicConfig.defaultVolume} />
+{featureConfig.musicPlayer && (musicConfig.neteasePlaylistId || musicConfig.playlist.length > 0) && (
+	<Player
+		client:idle
+		playlist={musicConfig.playlist}
+		neteasePlaylistId={musicConfig.neteasePlaylistId}
+		defaultVolume={musicConfig.defaultVolume}
+	/>
 )}

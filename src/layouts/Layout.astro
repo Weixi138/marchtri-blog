@@ -7,6 +7,7 @@ import "@fontsource/roboto/700.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import CommandPaletteMount from "@components/CommandPaletteMount.astro";
+import LoadingScreen from "@components/LoadingScreen.astro";
 import MusicPlayerMount from "@components/MusicPlayerMount.astro";
 import TerminalMount from "@components/TerminalMount.astro";
 import { profileConfig, siteConfig } from "@/config";
@@ -155,7 +156,10 @@ const bannerOffset =
 	</head>
 	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
 		  data-overlayscrollbars-initialize
-	>
+		>
+		<!-- 强制 3s 加载动画（最上层） -->
+		<LoadingScreen></LoadingScreen>
+
 		<!-- FX 特效画布：天空/樱花/点击粒子（z-0 位于全部内容之下） -->
 		<canvas id="fx-canvas" class="fixed inset-0 z-0 pointer-events-none" aria-hidden="true"></canvas>
 		<div id="weather-badge" class="fixed left-4 bottom-4 z-40 glass-panel px-3 py-1.5 text-xs text-75 opacity-0 transition-opacity pointer-events-none select-none"></div>
@@ -520,6 +524,7 @@ window.onresize = () => {
 // 樱雾小筑 · 特效层启动（docs/02）
 import { initFX } from "../effects/init";
 import { initReveal } from "../effects/reveal";
+import { initCursorGlow, initTitleEasterEgg } from "../effects/cursor-glow";
 import { featureConfig } from "../config";
 
 initFX({
@@ -528,11 +533,23 @@ initFX({
 	weatherBg: featureConfig.weatherBg,
 });
 initReveal();
+if (featureConfig.cursorGlow) initCursorGlow();
+initTitleEasterEgg();
+
+// 文章阅读进度条（元素只存在于文章页，swup 换页后自动失效/生效）
+window.addEventListener("scroll", () => {
+	const el = document.getElementById("reading-progress");
+	if (!el) return;
+	const total = document.documentElement.scrollHeight - window.innerHeight;
+	const ratio = total > 0 ? Math.min(1, window.scrollY / total) : 0;
+	el.style.width = `${ratio * 100}%`;
+}, { passive: true });
 
 // 音乐播放卡：事件委托，swup 换页后依然生效
 function setMusicState(card: Element | null, playing: boolean): void {
-	const btn = card?.querySelector(".mc-btn");
-	if (btn) btn.textContent = playing ? "⏸" : "▶";
+	const btn = card?.querySelector(".mc-btn") ?? null;
+	btn?.querySelector(".mc-icon-play")?.classList.toggle("hidden", playing);
+	btn?.querySelector(".mc-icon-pause")?.classList.toggle("hidden", !playing);
 }
 document.addEventListener("click", (e) => {
 	const target = e.target instanceof Element ? e.target : null;

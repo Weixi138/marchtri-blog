@@ -16,11 +16,17 @@ interface Petal {
 	color: string;
 }
 
-const COLORS = [
-	"rgba(244,167,197,0.85)",
-	"rgba(236,140,180,0.75)",
-	"rgba(252,214,229,0.9)",
-	"rgba(189,166,255,0.5)", // 偶尔一片淡紫
+const LIGHT_COLORS = [
+	"rgba(236, 140, 180, 0.9)",
+	"rgba(228, 118, 165, 0.82)",
+	"rgba(250, 198, 220, 0.95)",
+	"rgba(160, 130, 245, 0.55)", // 偶尔一片淡紫
+];
+const DARK_COLORS = [
+	"rgba(248, 178, 210, 0.75)",
+	"rgba(244, 165, 197, 0.66)",
+	"rgba(226, 200, 255, 0.6)",
+	"rgba(189, 166, 255, 0.5)",
 ];
 
 function drawPetal(
@@ -41,17 +47,21 @@ export function createSakuraLayer(
 	let lastW = -1;
 
 	function seed(w: number, h: number): void {
-		const count = w < 768 ? 12 : 24;
+		const count = w < 768 ? 18 : 32;
+		const colors =
+			document.documentElement.classList.contains("dark")
+				? DARK_COLORS
+				: LIGHT_COLORS;
 		petals = Array.from({ length: count }, (_, i) => ({
 			x: Math.random() * w,
 			y: Math.random() * h,
-			size: 4 + Math.random() * 5,
+			size: 5 + Math.random() * 5.5,
 			angle: Math.random() * Math.PI * 2,
 			spin: (Math.random() - 0.5) * 1.6,
-			speed: 22 + Math.random() * 30,
-			sway: 18 + Math.random() * 26,
+			speed: 26 + Math.random() * 34,
+			sway: 18 + Math.random() * 28,
 			phase: Math.random() * Math.PI * 2,
-			color: COLORS[i % COLORS.length],
+			color: colors[i % colors.length],
 		}));
 	}
 
@@ -69,13 +79,16 @@ export function createSakuraLayer(
 			for (const p of petals) {
 				p.y += p.speed * boost * dt;
 				p.angle += p.spin * dt;
-				if (p.y > h + 12) {
-					p.y = -12;
+				if (p.y > h + 14) {
+					p.y = -14;
 					p.x = Math.random() * w;
 				}
 				const x = p.x + Math.sin(t * 0.7 + p.phase) * p.sway;
 				ctx.save();
 				ctx.translate(x, p.y);
+				// 微透视：横向压缩 + 摆动，模拟花瓣翻转
+				const flip = 0.55 + 0.45 * Math.sin(t * 0.9 + p.phase * 1.3);
+				ctx.scale(flip, 1);
 				ctx.rotate(p.angle + Math.sin(t * 0.5 + p.phase) * 0.4);
 				ctx.fillStyle = p.color;
 				drawPetal(ctx, p.size);

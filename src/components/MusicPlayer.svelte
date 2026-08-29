@@ -1,7 +1,8 @@
 <script lang="ts">
 	/**
-	 * 音乐播放器（docs/03 P1-3）：右下角玻璃胶囊，
-	 * Web Audio AnalyserNode 低频能量 → window.__fxManager 驱动背景光晕律动。
+	 * 音乐播放器（docs/03 P1-3）。
+	 * - netease 模式（neteasePlaylistId 非空）：玻璃面板内嵌网易云官方外链播放器
+	 * - local 模式：本地曲库，Web Audio AnalyserNode 低频能量驱动背景光晕律动
 	 */
 	import { onDestroy } from "svelte";
 
@@ -12,15 +13,24 @@
 	}
 
 	let {
-		playlist = [],
+		playlist = [] as Track[],
+		neteasePlaylistId = "",
 		defaultVolume = 0.6,
-	}: { playlist?: Track[]; defaultVolume?: number } = $props();
+	}: {
+		playlist?: Track[];
+		neteasePlaylistId?: string;
+		defaultVolume?: number;
+	} = $props();
 
 	let open = $state(false);
 	let index = $state(0);
 	let playing = $state(false);
 	let volume = $state(defaultVolume);
 	let progress = $state(0);
+	let currentTime = $state(0);
+	let duration = $state(0);
+
+	const neteaseMode = $derived(neteasePlaylistId.trim() !== "");
 
 	let audioEl: HTMLAudioElement | undefined = $state();
 	let audioCtx: AudioContext | null = null;
@@ -29,6 +39,7 @@
 	let rafId = 0;
 
 	$effect(() => {
+		if (neteaseMode) return;
 		const saved = Number(localStorage.getItem("fx-music-volume"));
 		if (!Number.isNaN(saved) && saved > 0) volume = saved;
 		const savedIdx = Number(localStorage.getItem("fx-music-last"));
@@ -37,6 +48,7 @@
 	});
 
 	$effect(() => {
+		if (neteaseMode) return;
 		localStorage.setItem("fx-music-volume", String(volume));
 		localStorage.setItem("fx-music-last", String(index));
 		if (audioEl) audioEl.volume = volume;
@@ -114,8 +126,11 @@
 	}
 
 	function onTimeUpdate(): void {
-		if (audioEl && audioEl.duration)
+		if (audioEl && audioEl.duration) {
 			progress = audioEl.currentTime / audioEl.duration;
+			currentTime = audioEl.currentTime;
+			duration = audioEl.duration;
+		}
 	}
 
 	onDestroy(() => {
@@ -130,16 +145,15 @@
 		const s = Math.floor(t % 60);
 		return `${m}:${String(s).padStart(2, "0")}`;
 	};
-	let currentTime = $state(0);
-	let duration = $state(0);
 </script>
 
-{#if playlist.length}
-	<!-- 收起态：旋转唱片胶囊 -->
+{#if neteaseMode || playlist.length}
+<div>
+	<!-- 唱片胶囊：网易云模式展开时缓转，本地模式播放时旋转 -->
 	<button
 		class="fixed z-[80] right-4 bottom-4 w-12 h-12 rounded-full glass-panel flex items-center justify-center
 		       transition hover:scale-105 active:scale-95"
-		class:spinning={playing}
+		class:spinning={neteaseMode ? open : playing}
 		aria-label="音乐播放器"
 		onclick={() => (open = !open)}
 	>
@@ -158,89 +172,111 @@
 			aria-label="播放列表"
 		>
 			<div class="flex items-center gap-1 px-4 h-11 border-b border-[var(--stroke-glass)]">
-				<span class="text-sm font-bold text-75 flex-1">🎵 樱雾电台</span>
+				<span class="text-sm font-bold text-75 flex-1 flex items-center gap-2">
+					<span class="netease-logo" aria-hidden="true"></span>
+					樱雾电台{neteaseMode ? " · 网易云" : ""}
+				</span>
 				<button class="text-50 hover:text-[var(--sakura)] text-lg leading-none" aria-label="关闭" onclick={() => (open = false)}>×</button>
 			</div>
 
-			<div class="px-4 py-3 flex items-center gap-3">
-				<button
-					class="w-14 h-14 rounded-full shrink-0 flex items-center justify-center text-white text-xl
-					       transition hover:scale-105"
-					style="background: linear-gradient(135deg, var(--sakura), var(--murasaki));
-					       box-shadow: 0 4px 18px color-mix(in srgb, var(--sakura) 45%, transparent);"
-					aria-label={playing ? "暂停" : "播放"}
-					onclick={toggle}
-				>
-					{playing ? "⏸" : "▶"}
-				</button>
-				<div class="flex-1 min-w-0">
-					<div class="text-sm font-bold text-90 truncate">
-						{playlist[index]?.title ?? "-"}
+			{#if neteaseMode}
+				<iframe
+					src={`https://music.163.com/outchain/player?type=0&id=${neteasePlaylistId}&auto=1&height=360`}
+					title="网易云音乐歌单"
+					class="w-full h-[360px] border-0"
+					loading="lazy"
+				></iframe>
+			{:else}
+				<div class="px-4 py-3 flex items-center gap-3">
+					<button
+						class="w-14 h-14 rounded-full shrink-0 flex items-center justify-center text-white
+						       transition hover:scale-105"
+						style="background: linear-gradient(135deg, var(--sakura), var(--murasaki));
+						       box-shadow: 0 4px 18px color-mix(in srgb, var(--sakura) 45%, transparent);"
+						aria-label={playing ? "暂停" : "播放"}
+						onclick={toggle}
+					>
+						{#if playing}
+							<svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+						{:else}
+							<svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+						{/if}
+					</button>
+					<div class="flex-1 min-w-0">
+						<div class="text-sm font-bold text-90 truncate">
+							{playlist[index]?.title ?? "-"}
+						</div>
+						<div class="text-xs text-50 truncate">{playlist[index]?.artist ?? ""}</div>
+						<div class="flex items-center gap-2 mt-1.5">
+							<span class="text-[10px] text-50 tabular-nums">{fmt(currentTime)}</span>
+							<input
+								type="range"
+								min="0"
+								max="1000"
+								value={progress * 1000}
+								class="flex-1 accent-[var(--sakura)] h-1"
+								aria-label="播放进度"
+								oninput={(e) => {
+									if (!audioEl?.duration) return;
+									const v = Number(e.currentTarget.value) / 1000;
+									audioEl.currentTime = v * audioEl.duration;
+								}}
+							/>
+							<span class="text-[10px] text-50 tabular-nums">{fmt(duration)}</span>
+						</div>
 					</div>
-					<div class="text-xs text-50 truncate">{playlist[index]?.artist ?? ""}</div>
-					<div class="flex items-center gap-2 mt-1.5">
-						<span class="text-[10px] text-50 tabular-nums">{fmt(currentTime)}</span>
+				</div>
+
+				<div class="flex items-center justify-center gap-6 pb-2">
+					<button class="text-75 hover:text-[var(--sakura)]" aria-label="上一首" onclick={prev}>
+						<svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M6 6h2v12H6zm3.5 6l8.5-6v12z" /></svg>
+					</button>
+					<label class="flex items-center gap-1 text-xs text-50">
+						<span aria-hidden="true">Vol.</span>
 						<input
 							type="range"
 							min="0"
-							max="1000"
-							value={progress * 1000}
-							class="flex-1 accent-[var(--sakura)] h-1"
-							aria-label="播放进度"
-							oninput={(e) => {
-								if (!audioEl?.duration) return;
-								const v = Number(e.currentTarget.value) / 1000;
-								audioEl.currentTime = v * audioEl.duration;
-							}}
+							max="100"
+							value={volume * 100}
+							class="w-20 accent-[var(--sakura)] h-1"
+							aria-label="音量"
+							oninput={(e) => (volume = Number(e.currentTarget.value) / 100)}
 						/>
-						<span class="text-[10px] text-50 tabular-nums">{fmt(duration)}</span>
-					</div>
-				</div>
-			</div>
-
-			<div class="flex items-center justify-center gap-6 pb-2">
-				<button class="text-75 hover:text-[var(--sakura)] text-lg" aria-label="上一首" onclick={prev}>⏮</button>
-				<label class="flex items-center gap-1 text-xs text-50">
-					🔈
-					<input
-						type="range"
-						min="0"
-						max="100"
-						value={volume * 100}
-						class="w-20 accent-[var(--sakura)] h-1"
-						aria-label="音量"
-						oninput={(e) => (volume = Number(e.currentTarget.value) / 100)}
-					/>
-				</label>
-				<button class="text-75 hover:text-[var(--sakura)] text-lg" aria-label="下一首" onclick={next}>⏭</button>
-			</div>
-
-			<div class="max-h-40 overflow-y-auto border-t border-[var(--stroke-glass)] py-1">
-				{#each playlist as track, i (track.file)}
-					<button
-						class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition
-						{i === index ? 'text-[var(--sakura)] bg-[var(--btn-regular-bg)]' : 'text-75 hover:bg-[var(--btn-plain-bg-hover)]'}"
-						onclick={() => select(i)}
-					>
-						<span class="text-xs">{i === index && playing ? "🎶" : "🌸"}</span>
-						<span class="flex-1 truncate">{track.title}</span>
-						<span class="text-[10px] text-50 truncate max-w-[45%]">{track.artist}</span>
+					</label>
+					<button class="text-75 hover:text-[var(--sakura)]" aria-label="下一首" onclick={next}>
+						<svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z" /></svg>
 					</button>
-				{/each}
-			</div>
+				</div>
+
+				<div class="max-h-40 overflow-y-auto border-t border-[var(--stroke-glass)] py-1">
+					{#each playlist as track, i (track.file)}
+						<button
+							class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition
+							{i === index ? 'text-[var(--sakura)] bg-[var(--btn-regular-bg)]' : 'text-75 hover:bg-[var(--btn-plain-bg-hover)]'}"
+							onclick={() => select(i)}
+						>
+							<span class="text-xs w-4 text-center tabular-nums">{i + 1}</span>
+							<span class="flex-1 truncate">{track.title}</span>
+							<span class="text-[10px] text-50 truncate max-w-[45%]">{track.artist}</span>
+						</button>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 
-	<audio
-		bind:this={audioEl}
-		src={playlist[index]?.file}
-		onplay={onPlay}
-		onpause={onPause}
-		onended={next}
-		ontimeupdate={onTimeUpdate}
-		ondurationchange={() => (duration = audioEl?.duration ?? 0)}
-		preload="none"
-	></audio>
+	{#if !neteaseMode}
+		<audio
+			bind:this={audioEl}
+			src={playlist[index]?.file}
+			onplay={onPlay}
+			onpause={onPause}
+			onended={next}
+			ontimeupdate={onTimeUpdate}
+			preload="none"
+		></audio>
+	{/if}
+</div>
 {/if}
 
 <style>
@@ -251,6 +287,16 @@
 		to {
 			transform: rotate(360deg);
 		}
+	}
+	.netease-logo {
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background:
+			radial-gradient(circle at center, var(--sakura) 0 30%, transparent 32%),
+			conic-gradient(from 90deg, var(--sakura), var(--murasaki), var(--sakura));
+		-webkit-mask: radial-gradient(circle, transparent 26%, black 30%);
+		mask: radial-gradient(circle, transparent 26%, black 30%);
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.spinning > span {

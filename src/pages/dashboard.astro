@@ -79,14 +79,14 @@ const catDist = [...catCount.entries()].sort((a, b) => b[1] - a[1]);
 ---
 
 <MainGridLayout title="写作看板" description="写作数据看板">
-	<div class="mb-5 onload-animation">
-		<h1 class="text-4xl font-bold text-90 mb-2">📊 写作看板</h1>
-		<p class="text-50">一字一句，都种在时间的花圃里 🌱</p>
-	</div>
+<div class="mb-5 onload-animation">
+	<h1 class="text-4xl font-bold mb-2"><span class="gradient-text">写作看板</span></h1>
+	<p class="text-50">一字一句，都种在时间的花圃里</p>
+</div>
 
 	{posts.length === 0 ? (
 		<div class="card-base p-10 text-center onload-animation">
-			<div class="text-5xl mb-3">🌸</div>
+			<img src="/favicon/favicon.svg" alt="" class="w-14 h-14 mx-auto mb-3 opacity-80" />
 			<p class="text-75">还没有文章数据——写下第一篇，花园就开始生长。</p>
 		</div>
 	) : (
@@ -183,10 +183,9 @@ const catDist = [...catCount.entries()].sort((a, b) => b[1] - a[1]);
 				<!-- 年度卡片 -->
 				<div class="card-base p-6 onload-animation relative overflow-hidden">
 					<div
-						class="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-60 pointer-events-none"
-						style="background: radial-gradient(closest-side, var(--sakura-soft), transparent)"
-					/>
-					<div class="font-bold text-90 mb-4">🌟 {now.getFullYear()} 年度</div>
+						class="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-60 pointer-events-none hero-blob"
+					></div>
+					<div class="font-bold text-90 mb-4">{now.getFullYear()} 年度报告</div>
 					<div class="flex gap-8 mb-5">
 						<div>
 							<div class="text-3xl font-bold text-[var(--sakura)] tabular-nums">
@@ -204,7 +203,7 @@ const catDist = [...catCount.entries()].sort((a, b) => b[1] - a[1]);
 					<div class="text-sm text-75 leading-relaxed">
 						今年你在玻璃花房里种下了 <b class="text-[var(--sakura)]">{yearPosts.length}</b> 篇文章、
 						<b class="text-[var(--murasaki)]">{yearChars.toLocaleString()}</b> 个字。
-						愿明年的花开得更盛 🌸
+						愿明年的花开得更盛。
 					</div>
 				</div>
 			</div>

@@ -16,7 +16,7 @@ category: 技术
 | --- | --- |
 | Hexo + 各种炫酷主题 | 特效多，但技术栈偏老，定制上限低 |
 | Next.js 全定制 | 最自由，但博客基础设施全要自己造 |
-| **Astro + Fuwari 引擎** | ✅ 内容引擎现成，视觉层完全重写 |
+| **Astro + Fuwari 引擎** | 选用：内容引擎现成，视觉层完全重写 |
 
 最终方案：用 [Fuwari](https://github.com/saicaca/fuwari) 的内容引擎（文章、分类、标签、RSS、Pagefind 搜索），**视觉层 100% 自研**——这样既有"独特"的上限，又不重复造轮子。
 
@@ -65,4 +65,4 @@ npx wrangler pages deploy dist --project-name=sakura-mist
 
 「特效炫酷」和「耐看」并不冲突——关键是**克制**：樱花永远做点缀，玻璃永远做底色。动效要全部可以关掉，这才是一个对访客友好的花房。
 
-有什么想折腾的点，欢迎在评论里聊（配置好 giscus 之后的话 😉）。
+有什么想聊的，评论区（配置好 giscus 之后）或者 [GitHub](https://github.com/MarchTri) 都可以找到我。

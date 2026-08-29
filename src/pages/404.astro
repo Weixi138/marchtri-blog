@@ -10,12 +10,12 @@ import { url } from "../utils/url-utils";
 		     style="background: radial-gradient(closest-side, var(--murasaki-soft), transparent)"></div>
 
 		<div class="relative">
-			<div class="text-7xl mb-4">🌸</div>
-			<h1 class="text-3xl font-bold text-90 mb-3">啊，迷路了</h1>
+			<img src="/favicon/favicon.svg" alt="" class="w-20 h-20 mx-auto mb-5 fx-bloom" />
+			<h1 class="text-3xl font-bold mb-3"><span class="gradient-text">啊，迷路了</span></h1>
 			<p class="text-75 mb-1">这片花瓣飘到了没有路的地方。</p>
 			<p class="text-50 text-sm mb-8">你要找的页面不存在，或者已经被风吹走了。</p>
 			<div class="flex gap-3 justify-center flex-wrap">
-				<a href={url('/')} class="btn-regular rounded-full h-11 px-6 font-bold active:scale-95">回首页</a>
+				<a href={url('/')} class="btn-primary-grad rounded-full h-11 px-6 font-bold active:scale-95 transition">回首页</a>
 				<a href={url('/archive/')} class="btn-plain scale-animation rounded-full h-11 px-6 font-bold border border-[var(--stroke-glass)]">翻翻归档</a>
 			</div>
 			<p class="text-xs text-50 mt-8">小提示：按 <kbd class="px-1.5 py-0.5 rounded border border-[var(--stroke-glass)]">Ctrl+K</kbd> 可以直接搜索全站哦</p>

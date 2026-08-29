@@ -14,7 +14,7 @@ category: 随笔
 - 我是谁？用两三句话说清楚，别写成简历。
 - 这个站叫「樱雾小筑」，为什么叫这个名字？
 - 我在做什么：正在学/正在做/最近着迷的事。
-- 联系方式：邮箱、GitHub、其他平台。
+- 联系方式：[GitHub](https://github.com/MarchTri)、[Bilibili](https://space.bilibili.com/1858198083)、2287590270@qq.com。
 - 本站时间线：什么时候建的，重大改版记录。
 
 ## 风格提示

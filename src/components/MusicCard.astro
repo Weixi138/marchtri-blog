@@ -11,9 +11,15 @@ interface Props {
 const { file, title = "未命名曲目", artist = "" } = Astro.props;
 ---
 <div class="music-card card-base p-4 mb-6 flex items-center gap-4" data-file={file}>
-	<button class="mc-btn btn-regular rounded-full w-12 h-12 shrink-0 text-lg" aria-label="播放 / 暂停">▶</button>
+	<button
+		class="mc-btn btn-regular rounded-full w-12 h-12 shrink-0"
+		aria-label="播放 / 暂停"
+	>
+		<svg viewBox="0 0 24 24" fill="currentColor" class="mc-icon-play w-5 h-5 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+		<svg viewBox="0 0 24 24" fill="currentColor" class="mc-icon-pause w-5 h-5 hidden"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+	</button>
 	<div class="flex-1 min-w-0">
-		<div class="text-sm font-bold text-90 truncate">🎵 {title}</div>
+		<div class="text-sm font-bold text-90 truncate">{title}</div>
 		{artist && <div class="text-xs text-50 mb-1.5 truncate">{artist}</div>}
 		<div class="mc-bar h-1.5 rounded-full bg-[var(--btn-regular-bg)] overflow-hidden">
 			<div class="mc-fill h-full rounded-full" style="width: 0%; background: linear-gradient(90deg, var(--sakura), var(--murasaki)); transition: width .2s linear"></div>

@@ -4,7 +4,7 @@
 
 ## 项目是什么
 
-一个「特效炫酷、主题独特」的个人博客：**毛玻璃优雅 × 日系可爱**融合风（樱花粉/淡紫/暖橙），背景随**访客当地天气与昼夜**动态变化，配有命令面板、伪终端彩蛋、音乐播放器、追番书影页、写作热力图等特色功能。站点默认名「樱雾小筑 · SakuraMist」（占位名，可在配置中改），中文为主要界面语言。
+一个「特效炫酷、主题独特」的个人博客：**毛玻璃优雅 × 日系可爱**融合风（樱花粉/淡紫/暖橙），开屏有强制 3 秒加载动画，背景随**访客当地天气与昼夜**动态变化，配有命令面板、伪终端彩蛋、网易云歌单播放器、写作热力图等特色功能。站长 **MarchTri**，中文为主要界面语言。
 
 ## 技术栈
 
@@ -34,11 +34,11 @@ src/components/        # Astro 组件（结构层）
 src/components/widget/ # 侧栏/挂件类组件
 src/effects/           # ★ 自研特效层：Canvas 管理器与全部特效模块
 src/styles/            # ★ tokens.css（设计 token 唯一来源）+ 基础样式
-src/pages/             # 路由：/ /about /archive /bangumi /dashboard /404
-src/data/              # 构建期数据缓存（如 bangumi-cache.json）
-public/music/          # 音乐播放器音频文件
+src/pages/             # 路由：/ /about /archive /dashboard /404
+src/data/              # 本地静态数据（hitokoto.json 一言库）
+public/music/          # 本地备用音景（主播放源为网易云外链播放器）
 public/images/         # 文章与本站图片
-scripts/               # 构建期脚本（数据抓取/热力图统计）
+scripts/               # gen-music.mjs（占位音频合成）/ deploy.mjs（一键部署）
 ```
 
 > 注：`src/effects/`、`/bangumi`、`/dashboard` 为本项目自研新增；其余沿 Fuwari 原始结构。以实际仓库为准。
@@ -61,7 +61,8 @@ scripts/               # 构建期脚本（数据抓取/热力图统计）
 ```ts
 features: {
   commandPalette, terminal, weatherBg, musicPlayer,
-  bangumi, dashboard, comments, sakura, clickBurst, typewriter, ...
+  dashboard, comments, sakura, clickBurst, typewriter,
+  hitokoto, loadingScreen, cursorGlow
 }
 ```
 
@@ -74,8 +75,8 @@ features: {
 3. 禁止破坏 `prefers-reduced-motion` 与移动端降级路径。
 4. 文章 frontmatter 必须符合 `docs/04` 规范。
 5. 保留 Fuwari 的 MIT 版权声明（LICENSE / README 署名）。
-6. 只用无需鉴权的公开 API（Open-Meteo、Bangumi）；任何私密 key 不得入库。
-7. UI 文案默认中文；代码注释克制，只写必要的「为什么」。
+6. 只用无需鉴权的公开 API（Open-Meteo）；任何私密 key 不得入库。Bangumi 集成因接口不可用已移除，勿复活。
+7. UI 文案默认中文；**禁止使用 emoji**——图标一律用 SVG（iconify / 内联 SVG）；仅允许 `⌘` `❯` `↑↓↵` 等非 emoji 功能符号与文本颜文字。
 
 ## 内容写作
 

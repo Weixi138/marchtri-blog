@@ -19,11 +19,10 @@
 	let active = $state(0);
 
 	const pages = [
-		{ name: "🏠 首页", url: "/" },
-		{ name: "🗂 归档", url: "/archive/" },
-		{ name: "📺 追番 · 书影", url: "/bangumi/" },
-		{ name: "📊 写作看板", url: "/dashboard/" },
-		{ name: "ℹ️ 关于", url: "/about/" },
+		{ name: "首页", url: "/" },
+		{ name: "归档", url: "/archive/" },
+		{ name: "写作看板", url: "/dashboard/" },
+		{ name: "关于", url: "/about/" },
 	];
 
 	function navigate(url: string): void {
@@ -55,13 +54,13 @@
 	const actions: Row[] = [
 		{
 			kind: "action",
-			name: "🌗 切换 深色 / 浅色 主题",
+			name: "切换 深色 / 浅色 主题",
 			hint: "theme",
 			run: toggleTheme,
 		},
 		{
 			kind: "action",
-			name: "🌸 开 / 关 樱花飘落",
+			name: "开 / 关 樱花飘落",
 			hint: "sakura",
 			run: () => {
 				if (window.__fxSakura)
@@ -70,7 +69,7 @@
 		},
 		{
 			kind: "action",
-			name: "✨ 开 / 关 点击粒子",
+			name: "开 / 关 点击粒子",
 			hint: "particles",
 			run: () => {
 				if (window.__fxBurst)
@@ -79,13 +78,13 @@
 		},
 		{
 			kind: "action",
-			name: "🌦 开 / 关 天气粒子",
+			name: "开 / 关 天气粒子",
 			hint: "weather",
 			run: () => window.__fxSetWeather?.(),
 		},
 		{
 			kind: "action",
-			name: "📡 复制 RSS 订阅链接",
+			name: "复制 RSS 订阅链接",
 			hint: "rss",
 			run: copyRss,
 		},
@@ -213,22 +212,22 @@
 					onmouseenter={() => (active = i)}
 					onclick={() => runRow(row)}
 				>
-					{#if row.kind === "post"}
-						<span class="text-[var(--murasaki)]">📄</span>
-						<span class="flex-1 truncate text-90">{row.name}</span>
-						<span class="text-xs text-50 truncate max-w-[40%]"
-							>{row.description}</span
-						>
-					{:else if row.kind === "page"}
-						<span class="flex-1 truncate text-90">{row.name}</span>
-					{:else}
-						<span class="flex-1 truncate text-90">{row.name}</span>
-						<span class="text-xs text-50">{row.hint}</span>
-					{/if}
+				{#if row.kind === "post"}
+					<span class="post-dot" aria-hidden="true"></span>
+					<span class="flex-1 truncate text-90">{row.name}</span>
+					<span class="text-xs text-50 truncate max-w-[40%]"
+						>{row.description}</span
+					>
+				{:else if row.kind === "page"}
+					<span class="flex-1 truncate text-90">{row.name}</span>
+				{:else}
+					<span class="flex-1 truncate text-90">{row.name}</span>
+					<span class="text-xs text-50">{row.hint}</span>
+				{/if}
 				</button>
 			{:else}
 				<div class="px-4 py-6 text-center text-50">
-					没有找到「{query}」相关的内容 🥺
+					没有找到「{query}」相关的内容
 				</div>
 			{/each}
 		</div>
@@ -246,5 +245,12 @@
 		background: none;
 		border: none;
 		font-family: inherit;
+	}
+	.post-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		background: linear-gradient(135deg, var(--sakura), var(--murasaki));
+		flex-shrink: 0;
 	}
 </style>

@@ -1,5 +1,4 @@
 import type {
-	BangumiConfig,
 	CommentsConfig,
 	ExpressiveCodeConfig,
 	FeatureConfig,
@@ -45,7 +44,6 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
-		{ name: "追番", url: "/bangumi/" },
 		{ name: "看板", url: "/dashboard/" },
 		LinkPreset.About,
 	],
@@ -53,23 +51,23 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/demo-avatar.png",
-	name: "Sakura",
-	bio: "写代码，也写生活。在玻璃花房里慢慢更新。",
+	name: "MarchTri",
+	bio: "写代码，也写生活。住在樱雾小筑里的旅人。",
 	links: [
 		{
 			name: "GitHub",
 			icon: "fa6-brands:github",
-			url: "https://github.com",
+			url: "https://github.com/Weixi138",
 		},
 		{
 			name: "Bilibili",
 			icon: "fa6-brands:bilibili",
-			url: "https://www.bilibili.com",
+			url: "https://space.bilibili.com/1858198083",
 		},
 		{
 			name: "Email",
 			icon: "fa6-regular:envelope",
-			url: "mailto:me@example.com",
+			url: "mailto:2287590270@qq.com",
 		},
 	],
 };
@@ -91,17 +89,18 @@ export const featureConfig: FeatureConfig = {
 	terminal: true,
 	weatherBg: true,
 	musicPlayer: true,
-	bangumi: true,
 	dashboard: true,
 	comments: true,
 	sakura: true,
 	clickBurst: true,
 	typewriter: true,
 	hitokoto: true,
+	loadingScreen: true,
+	cursorGlow: true,
 };
 
 export const heroConfig: HeroConfig = {
-	greeting: "こんにちは，欢迎来到樱雾小筑 🌸",
+	greeting: "こんにちは，我是 MarchTri",
 	typewriterLines: [
 		"在这里，写下代码与生活。",
 		"背景会随你那里的天气和时间悄悄变化。",
@@ -110,24 +109,28 @@ export const heroConfig: HeroConfig = {
 	],
 };
 
+/**
+ * 音乐配置
+ * - neteasePlaylistId: 网易云音乐歌单 ID（歌单页 URL 里 playlist?id=xxx 的数字）。
+ *   填了就优先渲染网易云官方外链播放器；留空则使用本地歌单。
+ *   注意：网易云 iframe 受浏览器跨域限制，无法做音频律动；律动仅本地曲目支持。
+ * - playlist: 本地歌单（public/music/ 下的音频）。
+ */
 export const musicConfig: MusicConfig = {
+	neteasePlaylistId: "3778678", // 演示：云音乐热歌榜，改成你自己的歌单 ID
 	playlist: [
 		{
 			file: "/music/sakura-drops.wav",
 			title: "樱花落",
-			artist: "示例音景 · 可在 config.ts 换成你的歌单",
+			artist: "本站音景",
 		},
 		{
 			file: "/music/night-star.wav",
 			title: "夜星",
-			artist: "示例音景 · 可在 config.ts 换成你的歌单",
+			artist: "本站音景",
 		},
 	],
 	defaultVolume: 0.6,
-};
-
-export const bangumiConfig: BangumiConfig = {
-	userId: "", // 填入你的 Bangumi 用户 ID（数字）后 /bangumi 页会自动拉取收藏
 };
 
 export const commentsConfig: CommentsConfig = {

@@ -18,8 +18,16 @@
   --blur-glass: 20px;
   --glass-shadow: 0 8px 32px rgba(190, 120, 160, 0.1);
 
+  /* 渐变体系（品牌元素统一用主渐变，避免"套模板感"） */
+  --grad-primary: linear-gradient(135deg, var(--sakura), var(--murasaki));
+  --grad-warm: linear-gradient(135deg, var(--warm), var(--sakura));
+  --grad-glow: 0 4px 22px rgba(214, 116, 175, 0.4);
+
+  /* 鼠标跟随光晕 */
+  --glow-color: rgba(236, 111, 159, 0.1);
+
   /* 圆角 */
-  --radius-card: 20px;
+  --radius-card: 24px;
 
   /* 动效 */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -37,8 +45,11 @@
   --murasaki-soft: #3a2f52;
   --warm: #ffb877;
 
-  --bg-glass: rgba(45, 37, 54, 0.5);
-  --bg-glass-strong: rgba(52, 43, 62, 0.82);
-  --stroke-glass: rgba(255, 255, 255, 0.09);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --bg-glass: rgba(42, 34, 55, 0.52);
+  --bg-glass-strong: rgba(50, 40, 65, 0.84);
+  --stroke-glass: rgba(244, 165, 197, 0.14);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  --grad-glow: 0 4px 26px rgba(189, 166, 255, 0.35);
+  --glow-color: rgba(189, 166, 255, 0.09);
 }

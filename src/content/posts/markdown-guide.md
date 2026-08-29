@@ -36,16 +36,16 @@ category: 写作
 
 ```ts
 // 代码高亮 + 行号 + 折叠 + 语言徽章
-const sakura = (n: number): string => `🌸`.repeat(n);
-console.log(sakura(3)); // 🌸🌸🌸
+const sakura = (n: number): string => "petal".repeat(n);
+console.log(sakura(3)); // petalpetalpetal
 ```
 
 ## 表格
 
 | 功能 | 状态 |
 | --- | --- |
-| 天气背景 | ✅ |
-| 命令面板 | ✅ |
+| 天气背景 | 已支持 |
+| 命令面板 | 已支持 |
 
 ## 数学公式
 
@@ -59,7 +59,7 @@ $$
 
 放一张本站素材（封面同理，写在 frontmatter 的 `image` 字段）：
 
-![樱花素材](/favicon/favicon.svg)
+![樱花](/favicon/favicon.svg)
 
 ## frontmatter 备忘
 

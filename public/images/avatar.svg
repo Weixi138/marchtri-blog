@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f9c5d8"/>
+      <stop offset=".55" stop-color="#e6b8f2"/>
+      <stop offset="1" stop-color="#fcd9c4"/>
+    </linearGradient>
+    <linearGradient id="petal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffe9f2"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="36" fill="url(#bg)"/>
+  <g opacity=".5" fill="#ffffff">
+    <circle cx="38" cy="42" r="3"/>
+    <circle cx="168" cy="30" r="2.4"/>
+    <circle cx="150" cy="170" r="3.2"/>
+    <circle cx="30" cy="150" r="2.2"/>
+  </g>
+  <g transform="translate(100 104)">
+    <g fill="url(#petal)">
+      <g transform="rotate(0)"><path d="M0 -58 C 22 -46 26 -20 0 -6 C -26 -20 -22 -46 0 -58 Z"/></g>
+      <g transform="rotate(72)"><path d="M0 -58 C 22 -46 26 -20 0 -6 C -26 -20 -22 -46 0 -58 Z"/></g>
+      <g transform="rotate(144)"><path d="M0 -58 C 22 -46 26 -20 0 -6 C -26 -20 -22 -46 0 -58 Z"/></g>
+      <g transform="rotate(216)"><path d="M0 -58 C 22 -46 26 -20 0 -6 C -26 -20 -22 -46 0 -58 Z"/></g>
+      <g transform="rotate(288)"><path d="M0 -58 C 22 -46 26 -20 0 -6 C -26 -20 -22 -46 0 -58 Z"/></g>
+    </g>
+    <circle r="12" fill="#f0a878"/>
+    <circle r="4.5" fill="#d97e4e"/>
+  </g>
+</svg>
