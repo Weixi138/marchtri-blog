@@ -116,6 +116,9 @@ export type FeatureConfig = {
 	hitokoto: boolean;
 	loadingScreen: boolean;
 	cursorGlow: boolean;
+	photoWall: boolean;
+	autoRefresh: boolean;
+	devGuard: boolean;
 };
 
 export type HeroConfig = {

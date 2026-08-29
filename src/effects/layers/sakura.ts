@@ -47,7 +47,7 @@ export function createSakuraLayer(
 	let lastW = -1;
 
 	function seed(w: number, h: number): void {
-		const count = w < 768 ? 18 : 32;
+		const count = w < 768 ? 14 : 24;
 		const colors =
 			document.documentElement.classList.contains("dark")
 				? DARK_COLORS

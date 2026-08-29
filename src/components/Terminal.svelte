@@ -66,7 +66,7 @@
 				print("  ls                  列出全部文章");
 				print("  read <序号|关键词>   打开一篇文章");
 				print("  theme light|dark|auto  切换主题");
-				print("  cd about|archive|dashboard        前往页面");
+				print("  cd about|archive|dashboard|photos   前往页面");
 				print("  whoami | neofetch | date");
 				print("  clear | exit");
 				break;
@@ -114,6 +114,7 @@
 					about: "/about/",
 					archive: "/archive/",
 					dashboard: "/dashboard/",
+				photos: "/photos/",
 					"~": "/",
 					"/": "/",
 				};
@@ -121,7 +122,7 @@
 					print(`cd ${arg} …`);
 					setTimeout(() => navigate(map[arg]), 300);
 				} else {
-					print(`cd: 无处可去：${arg || "(空)"} 试试 about / archive / dashboard`);
+					print(`cd: 无处可去：${arg || "(空)"} 试试 about / archive / dashboard / photos`);
 				}
 				break;
 			}

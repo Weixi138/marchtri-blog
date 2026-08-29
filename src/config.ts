@@ -16,12 +16,12 @@ export const siteConfig: SiteConfig = {
 	subtitle: "写代码，也写生活。",
 	lang: "zh_CN",
 	themeColor: {
-		hue: 335, // 樱花粉，锁定主题色保证独特性
-		fixed: true, // 不向访客开放色相选择器
+		hue: 335,
+		fixed: true,
 	},
 	banner: {
-		enable: false,
-		src: "assets/images/demo-banner.png",
+		enable: true,
+		src: "https://t.alcy.cc/ycy",
 		position: "center",
 		credit: {
 			enable: false,
@@ -45,6 +45,7 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		{ name: "看板", url: "/dashboard/" },
+		{ name: "照片", url: "/photos/" },
 		LinkPreset.About,
 	],
 };
@@ -97,6 +98,9 @@ export const featureConfig: FeatureConfig = {
 	hitokoto: true,
 	loadingScreen: true,
 	cursorGlow: true,
+	photoWall: true,
+	devGuard: false,
+	autoRefresh: true,
 };
 
 export const heroConfig: HeroConfig = {
@@ -117,7 +121,7 @@ export const heroConfig: HeroConfig = {
  * - playlist: 本地歌单（public/music/ 下的音频）。
  */
 export const musicConfig: MusicConfig = {
-	neteasePlaylistId: "18088651885", // 网易云歌单 ID（playlist?id=xxx 的数字）
+	neteasePlaylistId: "18088651885",
 	playlist: [
 		{
 			file: "/music/sakura-drops.wav",
@@ -133,10 +137,11 @@ export const musicConfig: MusicConfig = {
 	defaultVolume: 0.6,
 };
 
+/** Giscus 评论配置（repo 未配置时不渲染评论 DOM） */
 export const commentsConfig: CommentsConfig = {
-	repo: "",
-	repoId: "",
+	repo: "Weixi138/marchtri-blog",
+	repoId: "R_kgDOUH18IA",
 	category: "Announcements",
-	categoryId: "",
+	categoryId: "DIC_kwDOUH18IA4C0PNV",
 	mapping: "pathname",
 };

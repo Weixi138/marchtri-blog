@@ -17,6 +17,16 @@ export interface FXOptions {
 
 const REFRESH_MS = 30 * 60 * 1000;
 
+/** 低内存 / 省流量降级（docs/02 降级矩阵） */
+function isLowEndDevice(): boolean {
+	if (typeof navigator === "undefined") return false;
+	const mem = (navigator as { deviceMemory?: number }).deviceMemory;
+	if (typeof mem === "number" && mem <= 4) return true;
+	const conn = (navigator as { connection?: { saveData?: boolean } }).connection;
+	if (conn?.saveData) return true;
+	return false;
+}
+
 export function initFX(opts: FXOptions): void {
 	if (typeof window === "undefined") return;
 	if (window.__fxManager) return; // 幂等
@@ -24,19 +34,25 @@ export function initFX(opts: FXOptions): void {
 	const canvas = document.getElementById("fx-canvas");
 	if (!(canvas instanceof HTMLCanvasElement)) return;
 
+	// 低内存降级：关闭粒子特效，只保留渐变底色
+	const lowEnd = isLowEndDevice();
+	const effectiveOpts = lowEnd
+		? { ...opts, sakura: false, clickBurst: false, weatherBg: false }
+		: opts;
+
 	const manager = new FXManager(canvas);
 	window.__fxManager = manager;
 
 	const sky = createSkyLayer();
 	manager.add(sky);
 
-	const sakuraState = { enabled: opts.sakura };
+	const sakuraState = { enabled: effectiveOpts.sakura };
 	window.__fxSakura = sakuraState;
 	manager.add(createSakuraLayer(sakuraState)); // 始终注册，enabled 控制显隐
 
 	const burst = createClickBurstLayer();
 	manager.add(burst);
-	const burstState = { enabled: opts.clickBurst };
+	const burstState = { enabled: effectiveOpts.clickBurst };
 	window.__fxBurst = burstState;
 	window.addEventListener(
 		"pointerdown",
@@ -58,7 +74,7 @@ export function initFX(opts: FXOptions): void {
 
 	// ---- 天气场景 + 底部徽标 + 开关（供命令面板调用） ----
 	const badge = document.getElementById("weather-badge");
-	let weatherOn = opts.weatherBg;
+	let weatherOn = effectiveOpts.weatherBg;
 	let lastScene: SceneState | null = null;
 
 	const applyScene = (scene: SceneState): void => {
@@ -82,7 +98,7 @@ export function initFX(opts: FXOptions): void {
 			.catch(() => {});
 
 	refresh();
-	if (opts.weatherBg) {
+	if (effectiveOpts.weatherBg) {
 		setInterval(() => void refresh(), REFRESH_MS);
 	}
 

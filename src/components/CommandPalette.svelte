@@ -22,6 +22,7 @@
 		{ name: "首页", url: "/" },
 		{ name: "归档", url: "/archive/" },
 		{ name: "写作看板", url: "/dashboard/" },
+		{ name: "照片墙", url: "/photos/" },
 		{ name: "关于", url: "/about/" },
 	];
 
