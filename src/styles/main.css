@@ -287,6 +287,37 @@ body {
     transition: width 0.1s linear;
 }
 
+/* ===== 灵动岛式悬浮导航：导航常驻顶部悬浮层，下滑后变胶囊 ===== */
+#navbar-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+.nav-card {
+    pointer-events: auto;
+    transition:
+        height 0.35s var(--ease-out-soft),
+        border-radius 0.35s var(--ease-out-soft),
+        box-shadow 0.35s var(--ease-out-soft),
+        transform 0.35s var(--ease-out-soft),
+        margin 0.35s var(--ease-out-soft);
+}
+#navbar.nav-island .nav-card {
+    height: 3.75rem;
+    border-radius: 999px;
+    transform: translateY(0.7rem);
+    margin-inline: 0.5rem;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.14),
+        0 4px 18px color-mix(in srgb, var(--sakura) 22%, transparent);
+}
+
 /* reduced-motion：静态但完整（docs/02 降级矩阵） */
 @media (prefers-reduced-motion: reduce) {
     .reveal {
