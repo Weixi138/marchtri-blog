@@ -132,13 +132,13 @@
 				open = false;
 				break;
 			case "whoami":
-				print("一位在玻璃花房里写代码的旅人");
+				print("MarchTri，一个写代码也写生活的人");
 				break;
 			case "date":
 				print(new Date().toString());
 				break;
 			case "neofetch":
-				print("        ,          OS:     SakuraMist Blog");
+				print("        ,          OS:     MarchTri Blog");
 				print("     .  |  .       Shell:  fx-terminal 0.1");
 				print("      \\ | /        Theme:  Glass x Kawaii");
 				print("   ---- + ----     Author: MarchTri");
@@ -205,7 +205,7 @@
 	}
 
 	onMount(() => {
-		print("欢迎来到 樱雾小筑 伪终端，输入 help 查看命令。");
+		print("欢迎来到 MarchTri 的伪终端，输入 help 查看命令。");
 	});
 </script>
 

@@ -3,14 +3,42 @@
  * 强制 3 秒加载动画（docs/03 P0-5）。
  * 每次整页加载都显示；视觉退场由纯 CSS 动画在 3s 时触发（无 JS 也准时），
  * JS 只负责到点后把节点从 DOM 移除（双保险定时器兜底）。
+ * 花朵为内联 SVG：花瓣错落开合循环 + 整体缓转 + 花蕊呼吸，全程持续动画。
  */
 import { featureConfig, siteConfig } from "../config";
+
+const petals = [0, 72, 144, 216, 288];
 ---
 {featureConfig.loadingScreen && (
 	<div id="fx-loader" aria-hidden="true">
 		<div class="fx-loader-halo"></div>
 		<div class="fx-loader-inner">
-			<img src="/favicon/favicon.svg" alt="" class="fx-loader-flower" />
+			<svg class="fx-loader-flower" viewBox="0 0 120 120">
+				<defs>
+					<linearGradient id="fxlf-petal" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0" stop-color="#f78bb8" />
+						<stop offset="1" stop-color="#a98df5" />
+					</linearGradient>
+					<radialGradient id="fxlf-core" cx="0.4" cy="0.35" r="1">
+						<stop offset="0" stop-color="#ffd9a8" />
+						<stop offset="1" stop-color="#f0a878" />
+					</radialGradient>
+				</defs>
+				<g class="fxlf-spin">
+					{petals.map((deg, i) => (
+						<g transform={`rotate(${deg} 60 60)`}>
+							<path
+								class="fxlf-petal"
+								style={`animation-delay:${i * 0.16}s`}
+								d="M60 62 C 76 48 78 24 60 12 C 42 24 44 48 60 62 Z"
+								fill="url(#fxlf-petal)"
+							/>
+						</g>
+					))}
+				</g>
+				<circle class="fxlf-core" cx="60" cy="60" r="11" fill="url(#fxlf-core)" />
+				<circle class="fxlf-dot" cx="56" cy="55" r="3.4" fill="#ffffff" opacity="0.6" />
+			</svg>
 			<div class="fx-loader-title">{siteConfig.title}</div>
 			<div class="fx-loader-bar"><i></i></div>
 		</div>
@@ -57,12 +85,12 @@ import { featureConfig, siteConfig } from "../config";
 	}
 	.fx-loader-halo {
 		position: absolute;
-		width: min(52vmin, 420px);
-		height: min(52vmin, 420px);
+		width: min(56vmin, 460px);
+		height: min(56vmin, 460px);
 		border-radius: 50%;
 		background: radial-gradient(
 			closest-side,
-			rgba(236, 111, 159, 0.14),
+			rgba(236, 111, 159, 0.16),
 			transparent 70%
 		);
 		animation: fx-loader-halo 3s ease-in-out;
@@ -72,18 +100,33 @@ import { featureConfig, siteConfig } from "../config";
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1.1rem;
+		gap: 1.2rem;
 	}
 	.fx-loader-flower {
-		width: 72px;
-		height: 72px;
-		animation: fx-loader-bloom 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-		filter: drop-shadow(0 6px 24px rgba(236, 111, 159, 0.45));
+		width: 104px;
+		height: 104px;
+		filter: drop-shadow(0 10px 30px rgba(214, 116, 175, 0.5));
+	}
+	.fxlf-spin {
+		transform-box: view-box;
+		transform-origin: 60px 60px;
+		animation: fxlf-rotate 9s linear infinite;
+	}
+	.fxlf-petal {
+		transform-box: view-box;
+		transform-origin: 60px 60px;
+		animation: fxlf-pulse 1.5s ease-in-out infinite;
+	}
+	.fxlf-core {
+		transform-box: fill-box;
+		transform-origin: center;
+		animation: fxlf-core-pulse 1.5s ease-in-out infinite;
 	}
 	.fx-loader-title {
-		font-size: 1.5rem;
+		font-size: 1.6rem;
 		font-weight: 700;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.22em;
+		text-indent: 0.22em; /* 抵消末字 spacing，保持视觉居中 */
 		background: linear-gradient(120deg, var(--sakura), var(--murasaki));
 		-webkit-background-clip: text;
 		background-clip: text;
@@ -91,8 +134,9 @@ import { featureConfig, siteConfig } from "../config";
 		animation: fx-loader-rise 0.8s ease 0.25s both;
 	}
 	.fx-loader-bar {
-		width: 220px;
-		height: 3px;
+		position: relative;
+		width: 230px;
+		height: 4px;
 		border-radius: 999px;
 		background: var(--stroke-glass);
 		overflow: hidden;
@@ -107,20 +151,53 @@ import { featureConfig, siteConfig } from "../config";
 		transform-origin: left;
 		animation: fx-loader-fill 2.55s cubic-bezier(0.65, 0, 0.35, 1) 0.45s both;
 	}
+	.fx-loader-bar::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			100deg,
+			transparent 20%,
+			rgba(255, 255, 255, 0.55) 50%,
+			transparent 80%
+		);
+		transform: translateX(-100%);
+		animation: fx-loader-shimmer 1.4s ease-in-out infinite;
+	}
 	@keyframes fx-loader-out {
 		to {
 			opacity: 0;
 			visibility: hidden;
 		}
 	}
-	@keyframes fx-loader-bloom {
-		from {
-			transform: scale(0.3) rotate(-40deg);
-			opacity: 0;
-		}
+	@keyframes fxlf-rotate {
 		to {
-			transform: scale(1) rotate(0);
+			transform: rotate(360deg);
+		}
+	}
+	@keyframes fxlf-pulse {
+		0%,
+		100% {
+			transform: scale(1);
+			opacity: 0.9;
+		}
+		50% {
+			transform: scale(1.17) rotate(2deg);
 			opacity: 1;
+		}
+	}
+	@keyframes fxlf-core-pulse {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.22);
+		}
+	}
+	@keyframes fx-loader-shimmer {
+		to {
+			transform: translateX(100%);
 		}
 	}
 	@keyframes fx-loader-rise {
@@ -157,15 +234,22 @@ import { featureConfig, siteConfig } from "../config";
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.fx-loader-flower,
+		.fxlf-spin,
+		.fxlf-petal,
+		.fxlf-core,
 		.fx-loader-title,
 		.fx-loader-bar,
 		.fx-loader-halo {
 			animation-duration: 0.01s;
+			animation-iteration-count: 1;
 			animation-fill-mode: forwards;
 		}
 		.fx-loader-bar i {
 			animation: none;
 			transform: scaleX(1);
+		}
+		.fx-loader-bar::after {
+			display: none;
 		}
 		#fx-loader {
 			animation-delay: 3s;

@@ -12,8 +12,8 @@ import type {
 import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
-	title: "樱雾小筑",
-	subtitle: "SakuraMist · 一座会呼吸的玻璃花房",
+	title: "MarchTri",
+	subtitle: "写代码，也写生活。",
 	lang: "zh_CN",
 	themeColor: {
 		hue: 335, // 樱花粉，锁定主题色保证独特性
@@ -52,7 +52,7 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/demo-avatar.png",
 	name: "MarchTri",
-	bio: "写代码，也写生活。住在樱雾小筑里的旅人。",
+	bio: "写代码，也写生活。",
 	links: [
 		{
 			name: "GitHub",
@@ -117,7 +117,7 @@ export const heroConfig: HeroConfig = {
  * - playlist: 本地歌单（public/music/ 下的音频）。
  */
 export const musicConfig: MusicConfig = {
-	neteasePlaylistId: "3778678", // 演示：云音乐热歌榜，改成你自己的歌单 ID
+	neteasePlaylistId: "18088651885", // 网易云歌单 ID（playlist?id=xxx 的数字）
 	playlist: [
 		{
 			file: "/music/sakura-drops.wav",

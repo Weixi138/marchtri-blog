@@ -101,7 +101,7 @@ export type ExpressiveCodeConfig = {
 	theme: string;
 };
 
-/* ===== 樱雾小筑扩展配置 ===== */
+/* ===== 博客扩展配置 ===== */
 
 export type FeatureConfig = {
 	commandPalette: boolean;

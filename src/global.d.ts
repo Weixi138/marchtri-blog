@@ -18,7 +18,7 @@ declare global {
 				}>;
 			}>;
 		};
-		/** 樱雾小筑特效层（src/effects/） */
+		/** 特效层（src/effects/） */
 		__fxManager?: {
 			setAudioEnergy: (v: number) => void;
 			audioEnergy: number;

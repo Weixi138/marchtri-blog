@@ -174,16 +174,17 @@
 			<div class="flex items-center gap-1 px-4 h-11 border-b border-[var(--stroke-glass)]">
 				<span class="text-sm font-bold text-75 flex-1 flex items-center gap-2">
 					<span class="netease-logo" aria-hidden="true"></span>
-					樱雾电台{neteaseMode ? " · 网易云" : ""}
+					音乐电台{neteaseMode ? " · 网易云" : ""}
 				</span>
 				<button class="text-50 hover:text-[var(--sakura)] text-lg leading-none" aria-label="关闭" onclick={() => (open = false)}>×</button>
 			</div>
 
 			{#if neteaseMode}
+				<!-- 网易云官方外链播放器 · height=66 精简模式：只保留播放控制条，不显示歌单列表 -->
 				<iframe
-					src={`https://music.163.com/outchain/player?type=0&id=${neteasePlaylistId}&auto=1&height=360`}
-					title="网易云音乐歌单"
-					class="w-full h-[360px] border-0"
+					src={`https://music.163.com/outchain/player?type=0&id=${neteasePlaylistId}&auto=1&height=66`}
+					title="网易云音乐"
+					class="w-[calc(100%-2rem)] mx-4 mb-4 h-[66px] border-0 rounded-xl overflow-hidden"
 					loading="lazy"
 				></iframe>
 			{:else}
