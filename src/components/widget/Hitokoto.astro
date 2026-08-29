@@ -4,12 +4,14 @@ import { featureConfig } from "../../config";
 import hitokoto from "../../data/hitokoto.json";
 ---
 {featureConfig.hitokoto && hitokoto.length > 0 && (
-<div id="hitokoto-card" class="card-base p-4 onload-animation" style="animation-delay: 250ms">
-    <div class="flex items-center gap-1.5 mb-2 text-[var(--sakura)] text-sm font-bold">
-        <Icon name="material-symbols:favorite-outline-rounded" class="text-[1.1rem]"></Icon>
+<div id="hitokoto-card" class="card-base relative overflow-hidden p-4 pl-5 onload-animation" style="animation-delay: 250ms">
+    <!-- 樱粉左侧装饰线 -->
+    <div class="absolute left-0 top-4 bottom-4 w-[3px] rounded-full bg-[var(--grad-primary)]" aria-hidden="true"></div>
+    <div class="flex items-center gap-1.5 mb-2 text-[var(--sakura-deep)] dark:text-[var(--sakura)] text-sm font-bold">
+        <Icon name="material-symbols:format-quote-rounded" class="text-[1.2rem]"></Icon>
         一言
     </div>
-    <p id="hitokoto-text" class="text-sm text-75 leading-relaxed mb-1.5">{hitokoto[0].text}</p>
+    <p id="hitokoto-text" class="text-sm text-75 leading-loose mb-1.5">{hitokoto[0].text}</p>
     <p id="hitokoto-from" class="text-xs text-50 text-right">—— {hitokoto[0].from}</p>
 </div>
 <script is:inline define:vars={{list: hitokoto}}>

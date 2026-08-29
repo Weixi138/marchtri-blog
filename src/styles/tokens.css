@@ -1,33 +1,91 @@
 /*
  * 设计 Token（docs/01-产品与视觉设计规范.md 的唯一实现源）
  * 品牌色独立于 --hue 体系，保证主题独特性不随色相选择器漂移。
+ * Fuwari 兼容层变量（--btn-* / --link-* / --toc-* 等）也统一定义在此，
+ * 与品牌色绑定；variables.styl 仅保留中性表面色。
  * 深浅模式沿用 Fuwari 的 :root / :root.dark 机制。
  */
 :root {
   /* 品牌三色 */
   --sakura: #ec6f9f;        /* 樱花粉：主按钮 / 链接 / 高亮 */
+  --sakura-deep: #c94d7e;   /* 深樱粉：浅色底上的粉色文字（保对比度） */
   --sakura-soft: #fbd9e6;   /* 粉色弱化底 */
   --murasaki: #9f7ff0;      /* 淡紫：次强调 / 标签 */
+  --murasaki-deep: #7c5cd6; /* 深淡紫：浅色底上的紫色文字 */
   --murasaki-soft: #e8dffb;
   --warm: #f5a76c;          /* 暖橙：收藏 / 点缀 */
 
+  /* docs/01 别名（--primary / --accent 统一指向品牌色） */
+  --primary: var(--sakura);
+  --primary-soft: var(--sakura-soft);
+  --accent: var(--murasaki);
+  --accent-soft: var(--murasaki-soft);
+
+  /* 文字 */
+  --text-main: #463b41;
+  --text-sub: #94858c;
+  --deep-text: var(--text-main);
+  --title-active: var(--sakura-deep);
+
   /* 玻璃材质 */
+  --bg-base: #fdf7f9;       /* 页面底色（樱白） */
   --bg-glass: rgba(255, 255, 255, 0.55);
   --bg-glass-strong: rgba(255, 255, 255, 0.78);
   --stroke-glass: rgba(255, 255, 255, 0.6);
   --blur-glass: 20px;
   --glass-shadow: 0 8px 32px rgba(190, 120, 160, 0.1);
+  --float-panel-bg: var(--bg-glass-strong);
+  --card-bg: var(--bg-glass);
+  --page-bg: var(--bg-base);
 
   /* 渐变体系（品牌元素统一用主渐变，避免"套模板感"） */
   --grad-primary: linear-gradient(135deg, var(--sakura), var(--murasaki));
   --grad-warm: linear-gradient(135deg, var(--warm), var(--sakura));
   --grad-glow: 0 4px 22px rgba(214, 116, 175, 0.4);
 
+  /* Banner 装饰渐变（半透明叠加在天气天空 canvas 之上） */
+  --grad-banner: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--sakura) 52%, transparent) 0%,
+    color-mix(in srgb, var(--murasaki) 38%, transparent) 52%,
+    color-mix(in srgb, var(--warm) 34%, transparent) 100%
+  );
+
+  /* 按钮（Fuwari 兼容层，绑定品牌粉） */
+  --btn-content: var(--sakura-deep);
+  --btn-regular-bg: color-mix(in srgb, var(--sakura) 10%, #fdf9fb);
+  --btn-regular-bg-hover: color-mix(in srgb, var(--sakura) 20%, #fdf9fb);
+  --btn-regular-bg-active: color-mix(in srgb, var(--sakura) 30%, #fdf9fb);
+  --btn-plain-bg-hover: color-mix(in srgb, var(--sakura) 12%, #fdf9fb);
+  --btn-plain-bg-active: color-mix(in srgb, var(--sakura) 6%, #fdf9fb);
+  --btn-card-bg-hover: color-mix(in srgb, var(--sakura) 6%, #ffffff);
+  --btn-card-bg-active: color-mix(in srgb, var(--sakura) 14%, #ffffff);
+  --enter-btn-bg: var(--btn-regular-bg);
+  --enter-btn-bg-hover: var(--btn-regular-bg-hover);
+  --enter-btn-bg-active: var(--btn-regular-bg-active);
+
+  /* 链接与选区 */
+  --selection-bg: color-mix(in srgb, var(--sakura) 22%, #ffffff);
+  --link-underline: color-mix(in srgb, var(--sakura) 30%, #fdf3f7);
+  --link-hover: color-mix(in srgb, var(--sakura) 16%, #fdf3f7);
+  --link-active: color-mix(in srgb, var(--sakura) 24%, #fdf3f7);
+
+  /* TOC */
+  --toc-badge-bg: color-mix(in srgb, var(--sakura) 14%, #fdf9fb);
+  --toc-item-active: var(--sakura-deep);
+
   /* 鼠标跟随光晕 */
   --glow-color: rgba(236, 111, 159, 0.1);
 
   /* 圆角 */
   --radius-card: 24px;
+  --radius-btn: 12px;
+  --radius-pill: 999px;
+
+  /* 导航条（顶部悬浮玻璃条） */
+  --nav-height: 3.5rem;
+  --nav-height-collapsed: 2.9rem;
+  --nav-offset: 0.75rem;
 
   /* 动效 */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -40,15 +98,40 @@
 
 :root.dark {
   --sakura: #f4a5c5;
+  --sakura-deep: #f4a5c5;
   --sakura-soft: #4a3040;
   --murasaki: #bda6ff;
+  --murasaki-deep: #bda6ff;
   --murasaki-soft: #3a2f52;
   --warm: #ffb877;
 
+  --text-main: #f0e7ed;
+  --text-sub: #a6959f;
+  --deep-text: var(--text-main);
+  --title-active: var(--sakura);
+
+  --bg-base: #17121c;       /* 夜空紫黑 */
   --bg-glass: rgba(42, 34, 55, 0.52);
   --bg-glass-strong: rgba(50, 40, 65, 0.84);
   --stroke-glass: rgba(244, 165, 197, 0.14);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  --btn-content: var(--sakura);
+  --btn-regular-bg: color-mix(in srgb, var(--sakura) 12%, #251d2e);
+  --btn-regular-bg-hover: color-mix(in srgb, var(--sakura) 20%, #2b2236);
+  --btn-regular-bg-active: color-mix(in srgb, var(--sakura) 28%, #322840);
+  --btn-plain-bg-hover: color-mix(in srgb, var(--sakura) 14%, #2b2236);
+  --btn-plain-bg-active: color-mix(in srgb, var(--sakura) 8%, #221a2b);
+  --btn-card-bg-hover: color-mix(in srgb, var(--sakura) 10%, #2b2236);
+  --btn-card-bg-active: color-mix(in srgb, var(--sakura) 16%, #322840);
+
+  --selection-bg: color-mix(in srgb, var(--sakura) 30%, #3a2f3d);
+  --link-underline: color-mix(in srgb, var(--sakura) 26%, #2b2236);
+  --link-hover: color-mix(in srgb, var(--sakura) 26%, #2b2236);
+  --link-active: color-mix(in srgb, var(--sakura) 34%, #2b2236);
+
+  --toc-badge-bg: var(--btn-regular-bg);
+  --toc-item-active: var(--sakura);
 
   --grad-glow: 0 4px 26px rgba(189, 166, 255, 0.35);
   --glow-color: rgba(189, 166, 255, 0.09);

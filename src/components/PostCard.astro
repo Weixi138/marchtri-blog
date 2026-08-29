@@ -4,9 +4,9 @@ import path from "node:path";
 import { Icon } from "astro-icon/components";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
-import { getDir } from "../utils/url-utils";
+import { formatDateToYYYYMMDD } from "../utils/date-utils";
+import { getCategoryUrl, getDir, getTagUrl } from "../utils/url-utils";
 import ImageWrapper from "./misc/ImageWrapper.astro";
-import PostMetadata from "./PostMeta.astro";
 
 interface Props {
 	class?: string;
@@ -27,7 +27,6 @@ const {
 	title,
 	url,
 	published,
-	updated,
 	tags,
 	category,
 	image,
@@ -38,73 +37,73 @@ const className = Astro.props.class;
 
 const hasCover = image !== undefined && image !== null && image !== "";
 
-const coverWidth = "28%";
-
 const { remarkPluginFrontmatter } = await entry.render();
 ---
-<div class:list={["card-base glass-hover-lift flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} style={style}>
-    <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
-        <a href={url}
-           class="transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-[var(--primary)] dark:hover:text-[var(--primary)]
-        active:text-[var(--title-active)] dark:active:text-[var(--title-active)]
-        before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
-        before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block
-        ">
-            {title}
-            <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-            <Icon class="text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
-        </a>
+<!-- 拉伸链接模式：卡片整体可点，内部分类/标签链接置于其上（HTML 不允许嵌套 <a>） -->
+<article class:list={["card-base glass-hover-lift group relative overflow-hidden rounded-[var(--radius-card)] w-full", className]} style={style}>
+    <a href={url} class="absolute inset-0 z-10" aria-label={title}></a>
 
-        <!-- metadata -->
-        <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} class="mb-4"></PostMetadata>
+    <div class="flex flex-col-reverse md:flex-row md:items-stretch">
+        <!-- 文本区 -->
+        <div class="flex-1 min-w-0 px-5 md:px-7 pt-5 md:pt-6 pb-5 md:pb-6 flex flex-col">
+            <!-- 分类 badge + 日期 -->
+            <div class="relative z-20 flex items-center gap-2.5 mb-2.5 w-fit">
+                <a href={getCategoryUrl(category)}
+                   class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[var(--sakura-soft)] text-[var(--sakura-deep)] dark:text-[var(--sakura)] transition"
+                   aria-label={category || "uncategorized"}>
+                    {category || i18n(I18nKey.uncategorized)}
+                </a>
+                <span class="text-50 text-xs flex items-center gap-1">
+                    <Icon name="material-symbols:calendar-today-outline-rounded" class="text-[0.9rem]"></Icon>
+                    {formatDateToYYYYMMDD(published)}
+                </span>
+            </div>
 
-        <!-- description -->
-        <div class:list={["transition text-75 mb-3.5 pr-4", {"line-clamp-2 md:line-clamp-1": !description}]}>
-            { description || remarkPluginFrontmatter.excerpt }
+            <!-- 标题 -->
+            <h2 class="text-xl md:text-[1.45rem] leading-snug font-bold text-90 mb-2 transition-colors group-hover:text-[var(--sakura-deep)] dark:group-hover:text-[var(--sakura)]">
+                {title}
+            </h2>
+
+            <!-- 摘要 -->
+            <p class="text-sm text-75 leading-relaxed mb-3 line-clamp-2">
+                { description || remarkPluginFrontmatter.excerpt }
+            </p>
+
+            <!-- 底部：标签 chips + 字数/阅读时长 -->
+            <div class="relative z-20 mt-auto flex items-center gap-2 flex-wrap">
+                {(tags && tags.length > 0) && tags.slice(0, 3).map((tag) => (
+                    <a href={getTagUrl(tag)}
+                       class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs bg-[var(--murasaki-soft)] text-[var(--murasaki-deep)] dark:text-[var(--murasaki)] transition hover:brightness-105"
+                       aria-label={tag.trim()}>
+                        {tag.trim()}
+                    </a>
+                ))}
+                <span class="ml-auto text-xs text-30 flex items-center gap-3 shrink-0">
+                    <span class="flex items-center gap-1">
+                        <Icon name="material-symbols:edit-note-rounded" class="text-[1rem]"></Icon>
+                        {remarkPluginFrontmatter.words} {i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <Icon name="material-symbols:schedule-rounded" class="text-[1rem]"></Icon>
+                        {remarkPluginFrontmatter.minutes} {i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
+                    </span>
+                </span>
+            </div>
         </div>
 
-        <!-- word count and read time  -->
-        <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
-            <div>
-                {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
-            </div>
-            <div>|</div>
-            <div>
-                {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
-            </div>
+        <!-- 封面：右侧圆角缩略图（移动端置顶）；无封面用品牌渐变占位 -->
+        <div class:list={["relative shrink-0 overflow-hidden", hasCover
+            ? "h-44 md:h-auto md:w-[15.5rem] md:self-stretch md:my-3.5 md:mr-3.5 md:rounded-2xl"
+            : "h-32 md:h-auto md:w-[9.5rem] md:self-stretch md:my-3.5 md:mr-3.5 md:rounded-2xl"]}>
+            {hasCover && <ImageWrapper src={image} basePath={path.join("content/posts/", getDir(entry.id))}
+                       alt={`Cover Image of ${title}`}
+                       class="w-full h-full transition-transform duration-500 group-hover:scale-[1.04]">
+            </ImageWrapper>}
+            {!hasCover && <div class="w-full h-full flex items-center justify-center"
+                               style="background: linear-gradient(135deg, var(--sakura-soft), var(--murasaki-soft));">
+                <Icon name="material-symbols:local-florist-rounded"
+                      class="text-5xl text-[var(--sakura)] opacity-60 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"></Icon>
+            </div>}
         </div>
-
     </div>
-
-    {hasCover && <a href={url} aria-label={title}
-                    class:list={["group",
-                        "max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
-                        "md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
-                    ]} >
-        <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
-        <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
-            <Icon name="material-symbols:chevron-right-rounded"
-                  class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
-            </Icon>
-        </div>
-        <ImageWrapper src={image} basePath={path.join("content/posts/", getDir(entry.id))} alt="Cover Image of the Post"
-                  class="w-full h-full">
-        </ImageWrapper>
-    </a>}
-
-    {!hasCover &&
-        <a href={url} aria-label={title} class="!hidden md:!flex btn-regular w-[3.25rem]
-         absolute right-3 top-3 bottom-3 rounded-xl bg-[var(--enter-btn-bg)]
-         hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95
-        ">
-            <Icon name="material-symbols:chevron-right-rounded"
-                  class="transition text-[var(--primary)] text-4xl mx-auto">
-            </Icon>
-        </a>
-    }
-</div>
-<div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>
-
-<style define:vars={{coverWidth}}>
-</style>
+</article>

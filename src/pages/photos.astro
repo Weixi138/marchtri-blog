@@ -6,7 +6,16 @@
  */
 import { featureConfig } from "../config";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import photos from "../data/photos.json";
+import photosRaw from "../data/photos.json";
+
+interface PhotoItem {
+	src: string;
+	alt: string;
+	width: number;
+	height: number;
+	caption?: string;
+}
+const photos: PhotoItem[] = photosRaw;
 ---
 
 <MainGridLayout title="照片墙" description="生活碎片，光影留存">

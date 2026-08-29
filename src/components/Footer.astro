@@ -1,14 +1,18 @@
 ---
-import { profileConfig } from "../config";
+import { profileConfig, siteConfig } from "../config";
 import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
 ---
-<div class="transition border-t border-dashed border-black/10 dark:border-white/15 my-10 mx-16 md:mx-32"></div>
-<div class="transition rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
+<div class="transition my-10 mx-6 md:mx-24">
+    <div class="h-px w-full bg-gradient-to-r from-transparent via-[var(--stroke-glass)] to-transparent"></div>
+</div>
+<div class="transition rounded-2xl mb-12 flex flex-col items-center justify-center px-6 gap-2">
+    <div class="transition text-sm text-50 text-center">{siteConfig.subtitle}</div>
     <div class="transition text-50 text-sm text-center">
         &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name} ·
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('rss.xml')}>RSS</a> ·
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
+        <a class="transition link text-[var(--sakura-deep)] dark:text-[var(--sakura)] font-medium" target="_blank" href={url('rss.xml')}>RSS</a> ·
+        <a class="transition link text-[var(--sakura-deep)] dark:text-[var(--sakura)] font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a> ·
+        <a class="transition link text-[var(--sakura-deep)] dark:text-[var(--sakura)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">Fuwari</a>
     </div>
 </div>

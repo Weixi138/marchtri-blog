@@ -21,7 +21,8 @@ export const siteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: "https://t.alcy.cc/ycy",
+		// 纯 CSS 渐变装饰 Banner（MainGridLayout），不再使用外链随机图
+		src: "",
 		position: "center",
 		credit: {
 			enable: false,

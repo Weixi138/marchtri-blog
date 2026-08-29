@@ -1,7 +1,8 @@
 ---
 /**
- * 左侧悬浮导航坞（≥1024px 竖排胶囊，窄屏自动变为顶部横排胶囊）。
- * 纯图标 + 悬停提示；搜索与命令面板共用 Ctrl+K 面板。
+ * 顶部悬浮玻璃导航条（docs/01：滚动时收缩高度）。
+ * 桌面端左侧 Logo+站名、右侧文字链接；窄屏文字链接收进汉堡下拉菜单。
+ * 搜索与命令面板共用 Ctrl+K 面板。
  */
 import { Icon } from "astro-icon/components";
 import { featureConfig, navBarConfig, siteConfig } from "../config";
@@ -21,49 +22,132 @@ let links: NavBarLink[] = navBarConfig.links.map(
 	},
 );
 
-function iconFor(l: NavBarLink): string {
-	const u = l.url;
-	if (u === "/") return "material-symbols:home-outline-rounded";
-	if (u.includes("archive")) return "material-symbols:archive-outline";
-	if (u.includes("dashboard")) return "material-symbols:dashboard-outline";
-	if (u.includes("photos")) return "material-symbols:photo-library-rounded";
-	if (u.includes("about")) return "material-symbols:info-outline-rounded";
-	return "fa6-solid:arrow-up-right-from-square";
+// 服务端先算好当前高亮，避免首帧闪烁；swup 换页后由下方脚本接管
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
+function isActive(linkUrl: string): boolean {
+	const p = (linkUrl.startsWith("http") ? null : url(linkUrl))?.replace(/\/+$/, "") || "/";
+	if (p === "/") return currentPath === "/";
+	return currentPath.startsWith(p);
 }
 ---
-<div id="navbar" class="z-50 onload-animation">
-    <div class:list={[className, "nav-dock glass-panel flex items-center px-2 py-2 gap-1"]}>
-        <a href={url('/')} class="dock-btn btn-plain" aria-label="回到首页" title={siteConfig.title}>
-            <Icon name="material-symbols:local-florist-rounded" class="text-[1.55rem] text-[var(--sakura)]" />
+<div id="navbar" class="z-50 w-full onload-animation">
+    <div class:list={[className, "nav-topbar glass-panel flex items-center justify-between gap-2 pl-4 pr-2"]}>
+        <a href={url('/')} class="flex items-center gap-2 shrink-0 group" aria-label={siteConfig.title}>
+            <Icon name="material-symbols:local-florist-rounded" class="text-[1.5rem] text-[var(--sakura)] transition-transform duration-300 group-hover:rotate-12" />
+            <span class="hidden sm:inline font-bold text-lg leading-none gradient-text">{siteConfig.title}</span>
         </a>
-        <div class="dock-divider" aria-hidden="true"></div>
+
+        <!-- 桌面端文字链接 -->
+        <div class="hidden lg:flex items-center gap-1" role="navigation">
+            {links.map((l) => {
+                return <a data-navlink aria-label={l.name} href={l.external ? l.url : url(l.url)}
+                          target={l.external ? "_blank" : null}
+                          class:list={["nav-link", {"nav-link-active": !l.external && isActive(l.url)}]}
+                >
+                    {l.name}
+                    {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.65rem] opacity-50"></Icon>}
+                </a>;
+            })}
+        </div>
+
+        <div class="flex items-center gap-1">
+            {featureConfig.commandPalette && (
+                <button id="palette-switch" class="nav-link !px-2.5" aria-label="命令面板 (Ctrl+K)" title="命令面板 (Ctrl+K)">
+                    <Icon name="material-symbols:keyboard-command-key" class="text-[1.3rem]" />
+                </button>
+            )}
+            <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+            <button id="nav-menu-switch" class="nav-link !px-2.5 lg:hidden" aria-label="打开菜单" aria-expanded="false">
+                <Icon name="material-symbols:menu-rounded" class="text-[1.4rem]" />
+            </button>
+        </div>
+    </div>
+
+    <!-- 移动端下拉菜单 -->
+    <div id="nav-menu-panel" class="glass-panel absolute left-3 right-3 top-[calc(var(--nav-height)_+_0.6rem)] lg:hidden float-panel-closed
+         transition-all duration-200 pointer-events-auto p-2" role="menu">
         {links.map((l) => {
-            return <a aria-label={l.name} title={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
-                      class="dock-btn btn-plain"
+            return <a href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
+                      class="group flex justify-between items-center py-2.5 px-4 rounded-xl transition
+                      hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]"
+                      role="menuitem"
             >
-                <Icon name={iconFor(l)} class="text-[1.35rem]" />
-                {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="absolute translate-x-3 -translate-y-2.5 text-[0.6rem] text-black/30 dark:text-white/30"></Icon>}
+                <span class="font-medium text-75 group-hover:text-[var(--sakura-deep)]">{l.name}</span>
+                {!l.external && <Icon name="material-symbols:chevron-right-rounded" class="text-[1.25rem] text-[var(--sakura)]"></Icon>}
+                {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.75rem] text-50"></Icon>}
             </a>;
         })}
-        <div class="dock-divider" aria-hidden="true"></div>
-        {featureConfig.commandPalette && (
-            <button id="palette-switch" class="dock-btn btn-plain" aria-label="命令面板 (Ctrl+K)" title="命令面板 (Ctrl+K)">
-                <Icon name="material-symbols:keyboard-command-key" class="text-[1.3rem]" />
-            </button>
-        )}
-        <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
     </div>
 </div>
 
 <script>
-function loadButtonScript() {
-    let paletteBtn = document.getElementById("palette-switch");
+function setupNavbar() {
+    // 命令面板按钮
+    const paletteBtn = document.getElementById("palette-switch");
     if (paletteBtn) {
         paletteBtn.onclick = function () {
             window.dispatchEvent(new CustomEvent("fx:open-palette"));
         };
     }
+
+    // 移动端菜单开合
+    const menuBtn = document.getElementById("nav-menu-switch") as HTMLButtonElement | null;
+    const menuPanel = document.getElementById("nav-menu-panel");
+    if (menuBtn && menuPanel && !menuBtn.dataset.bound) {
+        menuBtn.dataset.bound = "1";
+        menuBtn.onclick = function (e) {
+            e.stopPropagation();
+            const closed = menuPanel.classList.toggle("float-panel-closed");
+            menuBtn.setAttribute("aria-expanded", String(!closed));
+        };
+        document.addEventListener("click", (ev) => {
+            const t = ev.target instanceof Node ? ev.target : null;
+            if (!t || (!menuPanel.contains(t) && !menuBtn.contains(t))) {
+                menuPanel.classList.add("float-panel-closed");
+                menuBtn.setAttribute("aria-expanded", "false");
+            }
+        });
+        menuPanel.addEventListener("click", (ev) => {
+            if (ev.target instanceof Element && ev.target.closest("a")) {
+                menuPanel.classList.add("float-panel-closed");
+                menuBtn.setAttribute("aria-expanded", "false");
+            }
+        });
+    }
+
+    // 当前页高亮（swup 换页后导航条不重建，需手动维护）
+    function updateActive() {
+        const path = location.pathname.replace(/\/+$/, "") || "/";
+        document.querySelectorAll<HTMLAnchorElement>("#navbar a[data-navlink]").forEach((a) => {
+            const href = (a.getAttribute("href") || "").replace(/\/+$/, "") || "/";
+            const active = href === "/" ? path === "/" : path.startsWith(href);
+            a.classList.toggle("nav-link-active", active);
+        });
+    }
+    updateActive();
+    const swup = (window as any).swup;
+    if (swup?.hooks) {
+        swup.hooks.on("page:view", updateActive);
+    } else {
+        document.addEventListener("swup:enable", () => {
+            (window as any).swup?.hooks.on("page:view", updateActive);
+        }, { once: true });
+    }
+
+    // 滚动收缩（docs/01：顶部玻璃条滚动时收缩高度）
+    const wrapper = document.getElementById("navbar-wrapper");
+    if (wrapper && !wrapper.dataset.scrollBound) {
+        wrapper.dataset.scrollBound = "1";
+        let collapsed = false;
+        window.addEventListener("scroll", () => {
+            const next = window.scrollY > 24;
+            if (next !== collapsed) {
+                collapsed = next;
+                wrapper.classList.toggle("nav-collapsed", collapsed);
+            }
+        }, { passive: true });
+    }
 }
 
-loadButtonScript();
+setupNavbar();
 </script>

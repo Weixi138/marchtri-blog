@@ -5,7 +5,6 @@ import Navbar from "@components/Navbar.astro";
 import SideBar from "@components/widget/SideBar.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
-import ImageWrapper from "../components/misc/ImageWrapper.astro";
 import TOC from "../components/widget/TOC.astro";
 import { siteConfig } from "../config";
 import {
@@ -43,27 +42,48 @@ const mainPanelTop = siteConfig.banner.enable
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle}>
 
-<!-- Navbar -->
+<!-- Navbar：顶部悬浮玻璃条（fixed 样式见 main.css #navbar-wrapper） -->
 <slot slot="head" name="head"></slot>
-<div id="top-row" class="z-50 pointer-events-none relative transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" class:list={[""]}>
-    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all">
+<div id="top-row" class="z-50 pointer-events-none relative max-w-[var(--page-width)] px-0 md:px-4 mx-auto">
+    <div id="navbar-wrapper" class="transition-all">
         <Navbar></Navbar>
     </div>
 </div>
 
-<!-- Banner -->
+<!-- Banner：纯 CSS 渐变装饰（叠加在天气天空 canvas 之上，底部渐隐） -->
 {siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <div id="banner" class="w-full h-full transition duration-700 opacity-0 scale-105" style="background: url(${siteConfig.banner.src}) center/cover no-repeat; min-height: 100%;"></div>
-                  src={siteConfig.banner.src} position={siteConfig.banner.position}
-    >
-    
+    <div id="banner" class="relative w-full h-full transition duration-700 opacity-0 scale-105">
+        <div class="banner-blob banner-blob-1" aria-hidden="true"></div>
+        <div class="banner-blob banner-blob-2" aria-hidden="true"></div>
+        <svg class="banner-branch" viewBox="0 0 420 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+                <g id="banner-sakura">
+                    <ellipse cx="0" cy="-11" rx="6.5" ry="12" fill="rgba(255,255,255,0.5)" transform="rotate(0)"></ellipse>
+                    <ellipse cx="0" cy="-11" rx="6.5" ry="12" fill="rgba(255,255,255,0.5)" transform="rotate(72)"></ellipse>
+                    <ellipse cx="0" cy="-11" rx="6.5" ry="12" fill="rgba(255,255,255,0.5)" transform="rotate(144)"></ellipse>
+                    <ellipse cx="0" cy="-11" rx="6.5" ry="12" fill="rgba(255,255,255,0.5)" transform="rotate(216)"></ellipse>
+                    <ellipse cx="0" cy="-11" rx="6.5" ry="12" fill="rgba(255,255,255,0.5)" transform="rotate(288)"></ellipse>
+                    <circle r="3.2" fill="rgba(245,167,108,0.7)"></circle>
+                </g>
+            </defs>
+            <path d="M6 238 C 96 206, 158 178, 214 132 C 254 100, 300 62, 414 30" stroke="rgba(255,255,255,0.5)" stroke-width="3.5" stroke-linecap="round"></path>
+            <path d="M214 132 C 236 146, 258 160, 276 182" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" stroke-linecap="round"></path>
+            <use href="#banner-sakura" transform="translate(214 132)"></use>
+            <use href="#banner-sakura" transform="translate(276 182) scale(0.8) rotate(25)"></use>
+            <use href="#banner-sakura" transform="translate(330 62) scale(1.1) rotate(-15)"></use>
+            <use href="#banner-sakura" transform="translate(120 196) scale(0.7) rotate(40)"></use>
+            <circle cx="252" cy="98" r="4" fill="rgba(255,255,255,0.4)"></circle>
+            <circle cx="292" cy="52" r="3" fill="rgba(255,255,255,0.35)"></circle>
+            <circle cx="180" cy="160" r="3" fill="rgba(255,255,255,0.35)"></circle>
+        </svg>
+    </div>
 </div>}
 
 <!-- Main content -->
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]
+        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_17.5rem] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]
     mx-auto gap-4 px-0 md:px-4"
         >
             <!-- Banner image credit -->
@@ -73,16 +93,14 @@ const mainPanelTop = siteConfig.banner.enable
             >
                 <Icon class="text-white/75 text-[1.25rem] mr-1" name="material-symbols:copyright-outline-rounded" ></Icon>
                 <div class="text-white/75 text-xs">{siteConfig.banner.credit.text}</div>
-                <Icon class:list={["transition absolute text-[oklch(0.75_0.14_var(--hue))] right-4 text-[0.75rem] opacity-0",
+                <Icon class:list={["transition absolute text-[var(--sakura)] right-4 text-[0.75rem] opacity-0",
                     {"group-hover:opacity-100": hasBannerLink}]}
                       name="fa6-solid:arrow-up-right-from-square">
                 </Icon>
             </a>}
 
-
-            <SideBar class="mb-4 row-start-2 row-end-3 col-span-2 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
-
-            <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden">
+            <!-- 主内容在左，侧栏挂件移至右侧（docs/01 版式） -->
+            <main id="swup-container" class="transition-swup-fade col-span-1 lg:col-start-1 lg:row-start-1 overflow-hidden">
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
@@ -93,7 +111,9 @@ const mainPanelTop = siteConfig.banner.enable
                 </div>
             </main>
 
-            <div class="footer col-span-2 onload-animation block lg:hidden">
+            <SideBar class="mb-4 lg:mb-0 col-span-1 lg:col-start-2 lg:row-start-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
+
+            <div class="footer col-span-1 onload-animation block lg:hidden">
                 <Footer></Footer>
             </div>
         </div>
@@ -109,7 +129,7 @@ const mainPanelTop = siteConfig.banner.enable
         {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["hidden lg:block transition absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] items-center",
             {"toc-hide": siteConfig.banner.enable}]}
         >
-            <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] h-[calc(100vh_-_20rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
+            <div id="toc-inner-wrapper" class="fixed top-[5.5rem] w-[var(--toc-width)] h-[calc(100vh_-_20rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
                 <div id="toc" class="w-full h-full transition-swup-fade ">
                     <div class="h-8 w-full"></div>
                     <TOC headings={headings}></TOC>

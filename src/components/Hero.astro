@@ -7,9 +7,9 @@ import ImageWrapper from "./misc/ImageWrapper.astro";
 const { greeting } = heroConfig;
 ---
 <div class="card-base relative overflow-hidden mb-4 onload-animation" id="hero-card">
-    <!-- 极光 blob：缓慢漂移呼吸 -->
-    <div class="hero-blob -top-24 -right-24 w-72 h-72 opacity-70"></div>
-    <div class="hero-blob violet -bottom-28 -left-16 w-80 h-80 opacity-60"></div>
+    <!-- 极光 blob：缓慢漂移呼吸（Banner 已带渐变装饰，此处弱化避免重复） -->
+    <div class="hero-blob -top-24 -right-24 w-72 h-72 opacity-40"></div>
+    <div class="hero-blob violet -bottom-28 -left-16 w-80 h-80 opacity-35"></div>
 
     <div class="relative flex flex-col md:flex-row items-center gap-6 md:gap-8 px-6 md:px-10 py-8 md:py-9">
         <a href={url('/about/')} class="shrink-0 relative group" aria-label="关于我">
