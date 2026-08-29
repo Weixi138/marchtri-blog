@@ -17,6 +17,7 @@ import photos from "../data/photos.json";
 	</div>
 
 	<div class="card-base p-4 md:p-6 mb-4 onload-animation">
+		{photos.length > 0 ? (
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 			{photos.map((photo, i) => (
 				<div
@@ -39,6 +40,9 @@ import photos from "../data/photos.json";
 				</div>
 			))}
 		</div>
+		) : (
+			<p class="text-center text-50 py-10">照片墙空空如也，等待你的第一张照片</p>
+		)}
 	</div>
 ) : (
 	<div class="card-base p-10 text-center onload-animation">
