@@ -1,0 +1,10 @@
+---
+/**
+ * 音乐播放器挂载点（docs/03 P1-3）。
+ */
+import { featureConfig, musicConfig } from "../config";
+import Player from "./MusicPlayer.svelte";
+---
+{featureConfig.musicPlayer && musicConfig.playlist.length > 0 && (
+	<Player client:idle playlist={musicConfig.playlist} defaultVolume={musicConfig.defaultVolume} />
+)}

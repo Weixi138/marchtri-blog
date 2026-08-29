@@ -1,0 +1,18 @@
+---
+/**
+ * 命令面板挂载点：构建期收集文章数据传给 Svelte 岛。
+ */
+import { getSortedPosts } from "../utils/content-utils";
+import { featureConfig } from "../config";
+import { url } from "../utils/url-utils";
+import Palette from "./CommandPalette.svelte";
+
+const palettePosts = featureConfig.commandPalette
+	? (await getSortedPosts()).slice(0, 100).map((p) => ({
+			title: p.data.title,
+			url: url(`/posts/${p.slug}/`),
+			description: p.data.description || "",
+		}))
+	: [];
+---
+{featureConfig.commandPalette && <Palette client:idle posts={palettePosts} />}

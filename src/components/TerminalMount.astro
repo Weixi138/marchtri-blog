@@ -1,0 +1,18 @@
+---
+/**
+ * 伪终端挂载点：构建期收集文章清单（标题/日期/URL）。
+ */
+import { getSortedPosts } from "../utils/content-utils";
+import { featureConfig } from "../config";
+import { url } from "../utils/url-utils";
+import Terminal from "./Terminal.svelte";
+
+const terminalPosts = featureConfig.terminal
+	? (await getSortedPosts()).slice(0, 100).map((p) => ({
+			title: p.data.title,
+			url: url(`/posts/${p.slug}/`),
+			published: p.data.published.toISOString().slice(0, 10),
+		}))
+	: [];
+---
+{featureConfig.terminal && <Terminal client:idle posts={terminalPosts} />}

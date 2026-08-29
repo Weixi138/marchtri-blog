@@ -1,0 +1,25 @@
+---
+import { Icon } from "astro-icon/components";
+import { featureConfig } from "../../config";
+import hitokoto from "../../data/hitokoto.json";
+---
+{featureConfig.hitokoto && hitokoto.length > 0 && (
+<div id="hitokoto-card" class="card-base p-4 onload-animation" style="animation-delay: 250ms">
+    <div class="flex items-center gap-1.5 mb-2 text-[var(--sakura)] text-sm font-bold">
+        <Icon name="material-symbols:favorite-outline-rounded" class="text-[1.1rem]"></Icon>
+        一言
+    </div>
+    <p id="hitokoto-text" class="text-sm text-75 leading-relaxed mb-1.5">{hitokoto[0].text}</p>
+    <p id="hitokoto-from" class="text-xs text-50 text-right">—— {hitokoto[0].from}</p>
+</div>
+<script is:inline define:vars={{list: hitokoto}}>
+    // 每次完整加载随机一条（构建期静态站，避免外部 API 依赖）
+    const pick = list[Math.floor(Math.random() * list.length)];
+    const t = document.getElementById('hitokoto-text');
+    const f = document.getElementById('hitokoto-from');
+    if (t && f && pick) {
+        t.textContent = pick.text;
+        f.textContent = '—— ' + (pick.from || '佚名');
+    }
+</script>
+)}

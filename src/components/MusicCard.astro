@@ -1,0 +1,23 @@
+---
+/**
+ * 文章内嵌玻璃播放卡（docs/03 P1-3）。
+ * 播放控制走 Layout 层的事件委托（swup 换页后仍可用），本组件只输出结构。
+ */
+interface Props {
+	file: string;
+	title?: string;
+	artist?: string;
+}
+const { file, title = "未命名曲目", artist = "" } = Astro.props;
+---
+<div class="music-card card-base p-4 mb-6 flex items-center gap-4" data-file={file}>
+	<button class="mc-btn btn-regular rounded-full w-12 h-12 shrink-0 text-lg" aria-label="播放 / 暂停">▶</button>
+	<div class="flex-1 min-w-0">
+		<div class="text-sm font-bold text-90 truncate">🎵 {title}</div>
+		{artist && <div class="text-xs text-50 mb-1.5 truncate">{artist}</div>}
+		<div class="mc-bar h-1.5 rounded-full bg-[var(--btn-regular-bg)] overflow-hidden">
+			<div class="mc-fill h-full rounded-full" style="width: 0%; background: linear-gradient(90deg, var(--sakura), var(--murasaki)); transition: width .2s linear"></div>
+		</div>
+	</div>
+	<audio class="mc-audio" src={file} preload="none"></audio>
+</div>

@@ -1,0 +1,217 @@
+---
+/**
+ * 追番/书影页（docs/03 P1-4）。
+ * 构建期从 Bangumi API 拉取收藏，写 src/data/bangumi-cache.json；
+ * 网络失败沿用缓存；userId 未配置显示引导。
+ */
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { bangumiConfig, featureConfig } from "../config";
+
+import fs from "node:fs";
+import path from "node:path";
+
+const CACHE_PATH = path.resolve("src/data/bangumi-cache.json");
+const MAX_SUBJECTS = 40;
+
+interface BangumiItem {
+	subjectId: number;
+	type: "anime" | "book" | "other";
+	name: string;
+	nameCn: string;
+	image: string;
+	score: number; // 站点评分 0-10
+	myRate: number; // 我的评分 0-10
+	status: "wish" | "doing" | "done" | "on_hold" | "dropped";
+	comment: string;
+}
+
+const STATUS_CN: Record<BangumiItem["status"], string> = {
+	wish: "想看",
+	doing: "在看",
+	done: "看过",
+	on_hold: "搁置",
+	dropped: "抛弃",
+};
+
+function readCache(): { fetchedAt: string | null; items: BangumiItem[] } {
+	try {
+		return JSON.parse(fs.readFileSync(CACHE_PATH, "utf-8"));
+	} catch {
+		return { fetchedAt: null, items: [] };
+	}
+}
+
+function writeCache(data: { fetchedAt: string; items: BangumiItem[] }): void {
+	try {
+		fs.writeFileSync(CACHE_PATH, JSON.stringify(data, null, "\t"));
+	} catch {
+		/* 只读环境忽略 */
+	}
+}
+
+async function fetchBangumi(userId: string): Promise<BangumiItem[]> {
+	const headers = {
+		"User-Agent": "sakura-mist-blog/1.0 (personal blog bangumi page)",
+		Accept: "application/json",
+	};
+	const colUrl = `https://api.bgm.tv/v0/users/${encodeURIComponent(userId)}/collections?limit=${MAX_SUBJECTS}&offset=0`;
+	const colRes = await fetch(colUrl, { headers });
+	if (!colRes.ok) throw new Error(`bangumi collections ${colRes.status}`);
+	const colData = (await colRes.json()) as {
+		data: Array<{
+			subject_id: number;
+			type: number; // 1书 2番剧 3音乐 4游戏 5三次元
+			rate: number;
+			comment?: string;
+			subject_status: string; // wish/doing/done/on_hold/dropped
+		}>;
+	};
+
+	const statusMap: Record<string, BangumiItem["status"]> = {
+		wish: "wish",
+		doing: "doing",
+		done: "done",
+		on_hold: "on_hold",
+		dropped: "dropped",
+	};
+
+	const items = await Promise.all(
+		colData.data.slice(0, MAX_SUBJECTS).map(async (c) => {
+			const base: BangumiItem = {
+				subjectId: c.subject_id,
+				type: c.type === 1 ? "book" : c.type === 2 ? "anime" : "other",
+				name: "",
+				nameCn: "",
+				image: "",
+				score: 0,
+				myRate: c.rate ?? 0,
+				status: statusMap[c.subject_status] ?? "wish",
+				comment: c.comment ?? "",
+			};
+			try {
+				const sRes = await fetch(`https://api.bgm.tv/v0/subjects/${c.subject_id}`, { headers });
+				if (!sRes.ok) return base;
+				const s = (await sRes.json()) as {
+					name: string;
+					name_cn: string;
+					images?: { common?: string; large?: string };
+					rating?: { score?: number };
+				};
+				return {
+					...base,
+					name: s.name,
+					nameCn: s.name_cn || s.name,
+					image: s.images?.large || s.images?.common || "",
+					score: s.rating?.score ?? 0,
+				};
+			} catch {
+				return base;
+			}
+		}),
+	);
+	return items;
+}
+
+let items: BangumiItem[] = [];
+let notice = "";
+let hasData = false;
+
+if (featureConfig.bangumi && bangumiConfig.userId) {
+	try {
+		const fresh = await fetchBangumi(bangumiConfig.userId);
+		if (fresh.length >= 0) {
+			writeCache({ fetchedAt: new Date().toISOString(), items: fresh });
+			items = fresh;
+			hasData = fresh.length > 0;
+			if (!hasData) notice = "Bangumi 账号里还没有收藏条目。";
+		}
+	} catch {
+		const cache = readCache();
+		items = cache.items;
+		hasData = items.length > 0;
+		notice = hasData
+			? "本次构建未能联网更新，以下为本地缓存数据。"
+			: "构建时未能连接 Bangumi API，且暂无本地缓存。";
+	}
+} else if (featureConfig.bangumi) {
+	notice = "在 src/config.ts 的 bangumiConfig.userId 填入你的 Bangumi 用户 ID（数字），构建时会自动拉取收藏。";
+}
+
+const animeItems = items.filter((i) => i.type === "anime");
+const bookItems = items.filter((i) => i.type === "book");
+const otherItems = items.filter((i) => i.type === "other");
+const ORDER: BangumiItem["status"][] = ["doing", "wish", "done", "on_hold", "dropped"];
+const byStatus = (list: BangumiItem[]) =>
+	ORDER.map((s) => ({ status: s, list: list.filter((i) => i.status === s) })).filter(
+		(g) => g.list.length > 0,
+	);
+---
+
+<MainGridLayout title="追番 · 书影" description="追番与书影收藏">
+	<div class="mb-5 onload-animation">
+		<h1 class="text-4xl font-bold text-90 mb-2">📺 追番 · 书影</h1>
+		<p class="text-50">在看的世界，也在看我 🌸</p>
+	</div>
+
+	{notice && (
+		<div class="card-base p-5 mb-4 onload-animation text-75 text-sm">{notice}</div>
+	)}
+
+	{hasData && (
+		<>
+			{[
+				{ title: "番剧", list: byStatus(animeItems) },
+				{ title: "书籍", list: byStatus(bookItems) },
+				{ title: "其他", list: byStatus(otherItems) },
+			]
+				.filter((sec) => sec.list.length > 0)
+				.map((sec) => (
+					<section class="mb-6">
+						<h2 class="text-xl font-bold text-90 mb-3 onload-animation">
+							{sec.title}
+							<span class="text-sm text-50 ml-2">{sec.list.reduce((n, g) => n + g.list.length, 0)} 部</span>
+						</h2>
+						{sec.list.map((group) => (
+							<div class="mb-4">
+								<div class="text-sm text-[var(--sakura)] font-bold mb-2">{STATUS_CN[group.status]}</div>
+								<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+									{group.list.map((item) => (
+										<a
+											href={`https://bgm.tv/subject/${item.subjectId}`}
+											target="_blank"
+											rel="noopener"
+											class="card-base glass-hover-lift overflow-hidden flex flex-col"
+										>
+											<div class="aspect-[3/4] w-full overflow-hidden bg-[var(--btn-regular-bg)]">
+												{item.image && (
+													<img
+														src={item.image}
+														alt={item.nameCn || item.name}
+														loading="lazy"
+														class="w-full h-full object-cover"
+														referrerpolicy="no-referrer"
+													/>
+												)}
+											</div>
+											<div class="p-3">
+												<div class="text-sm font-bold text-90 line-clamp-2 mb-1">
+													{item.nameCn || item.name}
+												</div>
+												<div class="text-xs text-50 flex gap-2 items-center">
+													{item.score > 0 && <span class="text-[var(--warm)]">★ {item.score.toFixed(1)}</span>}
+													{item.myRate > 0 && <span>我的 {item.myRate}</span>}
+												</div>
+												{item.comment && (
+													<div class="text-xs text-50 mt-1 line-clamp-2">{item.comment}</div>
+												)}
+											</div>
+										</a>
+									))}
+								</div>
+							</div>
+						))}
+					</section>
+				))}
+		</>
+	)}
+</MainGridLayout>

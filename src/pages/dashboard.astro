@@ -1,0 +1,213 @@
+---
+/**
+ * 写作热力图 + 数据看板（docs/03 P1-5）。
+ * 数据全部构建期生成，运行时零请求。
+ */
+import { getCollection } from "astro:content";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+const posts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
+	(a, b) => a.data.published.valueOf() - b.data.published.valueOf(),
+);
+
+const now = new Date();
+const dayMs = 24 * 60 * 60 * 1000;
+
+// ---- 文章计数（按日期） ----
+const countByDate = new Map<string, number>();
+const stripMd = (s: string): string =>
+	s.replace(/```[\s\S]*?```/g, "").replace(/[#*`>\-\[\]()!|]/g, "");
+
+let totalChars = 0;
+for (const p of posts) {
+	const key = p.data.published.toISOString().slice(0, 10);
+	countByDate.set(key, (countByDate.get(key) ?? 0) + 1);
+	totalChars += stripMd(p.body ?? "").length;
+}
+
+// ---- 热力图数据：近 52 周，从周一开始 ----
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+// 本周周一
+const monday = new Date(today);
+monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+const start = new Date(monday.getTime() - 51 * 7 * dayMs);
+
+const weeks: { date: Date; count: number }[][] = [];
+for (let w = 0; w < 52; w++) {
+	const col: { date: Date; count: number }[] = [];
+	for (let d = 0; d < 7; d++) {
+		const date = new Date(start.getTime() + (w * 7 + d) * dayMs);
+		const key = date.toISOString().slice(0, 10);
+		col.push({ date, count: countByDate.get(key) ?? 0 });
+	}
+	weeks.push(col);
+}
+const maxCount = Math.max(1, ...countByDate.values());
+const level = (c: number): number =>
+	c === 0 ? 0 : Math.ceil((c / maxCount) * 4); // 0-4
+const LEVEL_ALPHA = [0.08, 0.3, 0.5, 0.72, 1];
+
+// ---- 统计 ----
+const categories = new Set(
+	posts.map((p) => p.data.category).filter((c) => c && c !== ""),
+);
+const tags = new Set(posts.flatMap((p) => p.data.tags ?? []));
+const yearPosts = posts.filter(
+	(p) => p.data.published.getFullYear() === now.getFullYear(),
+);
+const yearChars = yearPosts.reduce(
+	(n, p) => n + stripMd(p.body ?? "").length,
+	0,
+);
+
+// 最长连续写作周
+let streak = 0;
+let bestStreak = 0;
+for (const col of weeks) {
+	const has = col.some((c) => c.count > 0);
+	streak = has ? streak + 1 : 0;
+	bestStreak = Math.max(bestStreak, streak);
+}
+
+// 分类分布
+const catCount = new Map<string, number>();
+for (const p of posts) {
+	const c = p.data.category || "未分类";
+	catCount.set(c, (catCount.get(c) ?? 0) + 1);
+}
+const catDist = [...catCount.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<MainGridLayout title="写作看板" description="写作数据看板">
+	<div class="mb-5 onload-animation">
+		<h1 class="text-4xl font-bold text-90 mb-2">📊 写作看板</h1>
+		<p class="text-50">一字一句，都种在时间的花圃里 🌱</p>
+	</div>
+
+	{posts.length === 0 ? (
+		<div class="card-base p-10 text-center onload-animation">
+			<div class="text-5xl mb-3">🌸</div>
+			<p class="text-75">还没有文章数据——写下第一篇，花园就开始生长。</p>
+		</div>
+	) : (
+		<>
+			<!-- 统计卡 -->
+			<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+				{
+					[
+						{ label: "文章", value: posts.length, unit: "篇" },
+						{ label: "总字数", value: totalChars, unit: "字" },
+						{ label: "分类", value: categories.size, unit: "个" },
+						{ label: "标签", value: tags.size, unit: "个" },
+						{ label: "连续写作", value: bestStreak, unit: "周" },
+					].map((s, i) => (
+						<div
+							class="card-base p-4 text-center onload-animation glass-hover-lift"
+							style={`animation-delay: ${i * 60}ms`}
+						>
+							<div class="text-2xl font-bold text-[var(--sakura)] tabular-nums">
+								{s.value.toLocaleString()}
+							</div>
+							<div class="text-xs text-50 mt-1">
+								{s.label} · {s.unit}
+							</div>
+						</div>
+					))
+				}
+			</div>
+
+			<!-- 热力图 -->
+			<div class="card-base p-6 mb-4 onload-animation overflow-x-auto">
+				<div class="font-bold text-90 mb-1">写作热力图</div>
+				<div class="text-xs text-50 mb-4">近一年 · 每格一天 · 颜色越浓更新越多</div>
+				<svg
+					width={52 * 14 + 26}
+					height={7 * 14 + 8}
+					class="max-w-none"
+					role="img"
+					aria-label="近一年写作热力图"
+				>
+					{weeks.map((col, w) =>
+						col.map((cell, d) => {
+							if (cell.date > today) return null;
+							const l = level(cell.count);
+							return (
+								<rect
+									x={w * 14 + 22}
+									y={d * 14 + 4}
+									width="11"
+									height="11"
+									rx="3"
+									fill={l === 0 ? "var(--btn-regular-bg)" : `color-mix(in srgb, var(--sakura) ${LEVEL_ALPHA[l] * 100}%, var(--card-bg))`}
+								>
+									<title>{`${cell.date.toISOString().slice(0, 10)} · ${cell.count} 篇`}</title>
+								</rect>
+							);
+						}),
+					)}
+					{["一", "四", "日"].map((label, i) => (
+						<text
+							x="0"
+							y={(i * 3 + 1) * 14 + 12}
+							class="text-[10px]"
+							fill="var(--text-sub)"
+						>
+							{label}
+						</text>
+					))}
+				</svg>
+			</div>
+
+			<div class="grid md:grid-cols-2 gap-4">
+				<!-- 分类分布 -->
+				<div class="card-base p-6 onload-animation">
+					<div class="font-bold text-90 mb-4">分类分布</div>
+					{
+						catDist.map(([name, count]) => (
+							<div class="mb-3 last:mb-0">
+								<div class="flex justify-between text-sm text-75 mb-1">
+									<span>{name}</span>
+									<span class="text-50 tabular-nums">{count} 篇</span>
+								</div>
+								<div class="h-2.5 rounded-full bg-[var(--btn-regular-bg)] overflow-hidden">
+									<div
+										class="h-full rounded-full"
+										style={`width: ${(count / posts.length) * 100}%; background: linear-gradient(90deg, var(--sakura), var(--murasaki));`}
+									/>
+								</div>
+							</div>
+						))
+					}
+				</div>
+
+				<!-- 年度卡片 -->
+				<div class="card-base p-6 onload-animation relative overflow-hidden">
+					<div
+						class="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-60 pointer-events-none"
+						style="background: radial-gradient(closest-side, var(--sakura-soft), transparent)"
+					/>
+					<div class="font-bold text-90 mb-4">🌟 {now.getFullYear()} 年度</div>
+					<div class="flex gap-8 mb-5">
+						<div>
+							<div class="text-3xl font-bold text-[var(--sakura)] tabular-nums">
+								{yearPosts.length}
+							</div>
+							<div class="text-xs text-50 mt-1">今年文章</div>
+						</div>
+						<div>
+							<div class="text-3xl font-bold text-[var(--murasaki)] tabular-nums">
+								{yearChars.toLocaleString()}
+							</div>
+							<div class="text-xs text-50 mt-1">今年字数</div>
+						</div>
+					</div>
+					<div class="text-sm text-75 leading-relaxed">
+						今年你在玻璃花房里种下了 <b class="text-[var(--sakura)]">{yearPosts.length}</b> 篇文章、
+						<b class="text-[var(--murasaki)]">{yearChars.toLocaleString()}</b> 个字。
+						愿明年的花开得更盛 🌸
+					</div>
+				</div>
+			</div>
+		</>
+	)}
+</MainGridLayout>

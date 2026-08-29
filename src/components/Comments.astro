@@ -1,0 +1,44 @@
+---
+/**
+ * giscus 评论（docs/03 P0-4）。
+ * commentsConfig.repo/repoId 未配置时显示占位提示，不报错。
+ */
+import { Icon } from "astro-icon/components";
+import { commentsConfig, featureConfig } from "../config";
+
+const enabled = featureConfig.comments && !!commentsConfig.repo && !!commentsConfig.repoId;
+---
+{featureConfig.comments && (
+	<div class="card-base p-4 md:p-6 mb-4 onload-animation">
+		<div class="font-bold text-90 mb-3 flex items-center gap-2">
+			<Icon name="material-symbols:chat-bubble-outline-rounded" class="text-[1.2rem] text-[var(--sakura)]"></Icon>
+			说说你的想法
+		</div>
+		{enabled ? (
+			<script
+				is:inline
+				src="https://giscus.app/client.js"
+				data-repo={commentsConfig.repo}
+				data-repo-id={commentsConfig.repoId}
+				data-category={commentsConfig.category}
+				data-category-id={commentsConfig.categoryId}
+				data-mapping={commentsConfig.mapping}
+				data-strict="0"
+				data-reactions-enabled="1"
+				data-emit-metadata="0"
+				data-input-position="top"
+				data-theme="preferred_color_scheme"
+				data-lang="zh-CN"
+				data-loading="lazy"
+				crossorigin="anonymous"
+				async
+			></script>
+		) : (
+			<p class="text-50 text-sm leading-relaxed">
+				评论还没配置好：在 <code class="text-[var(--sakura)]">src/config.ts</code> 的
+				<code class="text-[var(--sakura)]">commentsConfig</code> 里填入你的 giscus
+				repo / repoId 即可激活（步骤见 docs/05-部署指南）。
+			</p>
+		)}
+	</div>
+)}
