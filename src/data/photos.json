@@ -1,23 +1,23 @@
 [
   {
-    "src": "/images/demo-avatar.png",
-    "alt": "MarchTri 头像",
-    "width": 400,
-    "height": 400,
-    "caption": "写代码，也写生活"
-  },
-  {
-    "src": "/images/demo-banner.png",
-    "alt": "博客横幅",
-    "width": 1200,
-    "height": 630,
-    "caption": "毛玻璃优雅 x 日系可爱"
-  },
-  {
     "src": "/favicon/favicon.svg",
     "alt": "站点图标",
     "width": 256,
     "height": 256,
     "caption": "樱花花房"
+  },
+  {
+    "src": "https://t.alcy.cc/ycy",
+    "alt": "随机风景",
+    "width": 800,
+    "height": 600,
+    "caption": "每一次刷新都是新的风景"
+  },
+  {
+    "src": "https://t.alcy.cc/ycy",
+    "alt": "随机壁纸",
+    "width": 800,
+    "height": 600,
+    "caption": "光影留存"
   }
 ]

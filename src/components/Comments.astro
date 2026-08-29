@@ -6,7 +6,7 @@
 import { Icon } from "astro-icon/components";
 import { commentsConfig, featureConfig } from "../config";
 
-const enabled = featureConfig.comments && !!commentsConfig.repo && !!commentsConfig.repoId;
+const enabled = featureConfig.comments && !!commentsConfig.repo && !!commentsConfig.repoId && !!commentsConfig.categoryId;
 ---
 {featureConfig.comments && (
 	<div class="card-base p-4 md:p-6 mb-4 onload-animation">
@@ -35,9 +35,9 @@ const enabled = featureConfig.comments && !!commentsConfig.repo && !!commentsCon
 			></script>
 		) : (
 			<p class="text-50 text-sm leading-relaxed">
-				评论还没配置好：在 <code class="text-[var(--sakura)]">src/config.ts</code> 的
-				<code class="text-[var(--sakura)]">commentsConfig</code> 里填入你的 giscus
-				repo / repoId 即可激活（步骤见 docs/05-部署指南）。
+				评论功能待启用：需先在 GitHub 仓库开启 Discussions，
+				安装 giscus 应用，然后更新 <code class="text-[var(--sakura)]">src/config.ts</code> 中的
+				<code class="text-[var(--sakura)]">commentsConfig</code>。
 			</p>
 		)}
 	</div>
