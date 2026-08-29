@@ -1,16 +1,82 @@
 ---
 /**
  * 音乐播放器挂载点（docs/03 P1-3）。
- * 网易云歌单 ID 优先；本地曲库作为备用模式。
+ * 网易云歌单作为音源：构建期经公开接口拉取曲目列表（写本地缓存，失败沿用缓存），
+ * 运行时经网易云外链直链播放；播放器 UI 为全自研玻璃组件。
  */
+import fs from "node:fs";
+import path from "node:path";
 import Player from "./MusicPlayer.svelte";
 import { featureConfig, musicConfig } from "../config";
+
+interface Track {
+	file: string;
+	title: string;
+	artist?: string;
+}
+
+const CACHE = path.resolve("src/data/music-cache.json");
+
+function readCache(): Track[] | null {
+	try {
+		const data = JSON.parse(fs.readFileSync(CACHE, "utf-8"));
+		return Array.isArray(data.tracks) && data.tracks.length > 0 ? data.tracks : null;
+	} catch {
+		return null;
+	}
+}
+
+function writeCache(tracks: Track[]): void {
+	try {
+		fs.writeFileSync(
+			CACHE,
+			JSON.stringify({ fetchedAt: new Date().toISOString(), tracks }, null, "\t"),
+		);
+	} catch {
+		/* 只读环境忽略 */
+	}
+}
+
+async function fetchNeteaseTracks(id: string): Promise<Track[] | null> {
+	try {
+		const ctrl = new AbortController();
+		const timer = setTimeout(() => ctrl.abort(), 8000);
+		const res = await fetch(`https://music.163.com/api/playlist/detail?id=${id}`, {
+			signal: ctrl.signal,
+		});
+		clearTimeout(timer);
+		if (!res.ok) return null;
+		const data = (await res.json()) as {
+			result?: {
+				tracks?: Array<{
+					id: number;
+					name?: string;
+					artists?: Array<{ name?: string }>;
+				}>;
+			};
+		};
+		const tracks = (data.result?.tracks ?? []).slice(0, 50).map((t) => ({
+			file: `https://music.163.com/song/media/outer/url?id=${t.id}.mp3`,
+			title: t.name ?? "未知曲目",
+			artist: (t.artists ?? []).map((a) => a.name ?? "").filter(Boolean).join(", "),
+		}));
+		return tracks.length > 0 ? tracks : null;
+	} catch {
+		return null;
+	}
+}
+
+let playlist: Track[] = musicConfig.playlist;
+if (featureConfig.musicPlayer && musicConfig.neteasePlaylistId) {
+	const fresh = await fetchNeteaseTracks(musicConfig.neteasePlaylistId);
+	if (fresh) {
+		writeCache(fresh);
+		playlist = fresh;
+	} else {
+		playlist = readCache() ?? musicConfig.playlist;
+	}
+}
 ---
-{featureConfig.musicPlayer && (musicConfig.neteasePlaylistId || musicConfig.playlist.length > 0) && (
-	<Player
-		client:idle
-		playlist={musicConfig.playlist}
-		neteasePlaylistId={musicConfig.neteasePlaylistId}
-		defaultVolume={musicConfig.defaultVolume}
-	/>
+{featureConfig.musicPlayer && playlist.length > 0 && (
+	<Player client:idle playlist={playlist} defaultVolume={musicConfig.defaultVolume} />
 )}

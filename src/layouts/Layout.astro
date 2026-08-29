@@ -160,9 +160,6 @@ const bannerOffset =
 		<!-- 强制 3s 加载动画（最上层） -->
 		<LoadingScreen></LoadingScreen>
 
-		<!-- 灵动岛哨兵：滚出视口顶部即判定为"已下滑" -->
-		<div id="nav-sentinel" class="absolute top-0 left-0 w-px h-px pointer-events-none" aria-hidden="true"></div>
-
 		<!-- FX 特效画布：天空/樱花/点击粒子（z-0 位于全部内容之下） -->
 		<canvas id="fx-canvas" class="fixed inset-0 z-0 pointer-events-none" aria-hidden="true"></canvas>
 		<div id="weather-badge" class="fixed left-4 bottom-4 z-40 glass-panel px-3 py-1.5 text-xs text-75 opacity-0 transition-opacity pointer-events-none select-none"></div>
@@ -280,6 +277,7 @@ const bannerEnabled = !!document.getElementById('banner-wrapper')
 function setClickOutsideToClose(panel: string, ignores: string[]) {
 	document.addEventListener("click", event => {
 		let panelDom = document.getElementById(panel);
+		if (!panelDom) return;		// 面板可能已随导航重构移除
 		let tDom = event.target;
 		if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
 		for (let ig of ignores) {
@@ -288,12 +286,10 @@ function setClickOutsideToClose(panel: string, ignores: string[]) {
 				return;
 			}
 		}
-		panelDom!.classList.add("float-panel-closed");
+		panelDom.classList.add("float-panel-closed");
 	});
 }
 setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
-setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
-setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
 
 
 function loadTheme() {
@@ -475,29 +471,8 @@ if (window?.swup?.hooks) {
 
 let backToTopBtn = document.getElementById('back-to-top-btn');
 let toc = document.getElementById('toc-wrapper');
-let navbar = document.getElementById('navbar-wrapper')
-
-// 灵动岛导航：scroll 事件 + 顶部哨兵 IntersectionObserver 双保险
-function updateNavIsland() {
-	const navIsland = document.getElementById('navbar')
-	if (!navIsland) return
-	const y = document.body.scrollTop || document.documentElement.scrollTop
-	navIsland.classList.toggle('nav-island', y > 32)
-}
-{
-	const sentinel = document.getElementById('nav-sentinel')
-	if (sentinel && 'IntersectionObserver' in window) {
-		const io = new IntersectionObserver((entries) => {
-			const navIsland = document.getElementById('navbar')
-			if (navIsland) navIsland.classList.toggle('nav-island', !entries[0].isIntersecting)
-		})
-		io.observe(sentinel)
-	}
-}
 
 function scrollFunction() {
-	// 灵动岛：页面下滑后导航悬浮为胶囊（始终可见，不随滚动隐藏）
-	updateNavIsland();
 	let bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100)
 
 	if (backToTopBtn) {
@@ -517,6 +492,7 @@ function scrollFunction() {
 	}
 
 	if (!bannerEnabled) return
+	const navbar = document.getElementById('navbar-wrapper')
 	if (navbar) {
 		const NAVBAR_HEIGHT = 72
 		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16			// The height the main panel overlaps the banner
