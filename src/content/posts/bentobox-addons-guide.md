@@ -1,6 +1,6 @@
 ---
 title: BentoBox 空岛附属插件大全
-published: 2026-08-29
+published: 2026-08-29T16:30:00
 description: BentoBox 3.22.2 空岛框架的 7 个附属插件详解：岛屿等级 Level、岛屿银行 Bank、边界可视化 Border、岛内飞行 IslandFly、背包切换 InvSwitcher 与魔法刷石机的关键参数、命令与机制。
 tags: [Minecraft, 空岛服务器, BentoBox]
 category: 空岛服务器

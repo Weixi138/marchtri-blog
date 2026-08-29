@@ -1,6 +1,6 @@
 ---
 title: 你好，我是 MarchTri
-published: 2026-08-29
+published: 2026-08-29T08:00:00
 description: 小站开张了——这里有一份完整的「寻宝指南」，教你发现这个博客里藏着的所有小机关。
 tags: [随笔, 建站]
 category: 随笔

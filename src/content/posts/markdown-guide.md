@@ -1,6 +1,6 @@
 ---
 title: Markdown 写作要素速览
-published: 2026-08-29
+published: 2026-08-29T09:30:00
 description: 这篇文章是站点的「排版基准页」，集中演示各类 Markdown 与扩展语法在本站的渲染效果，写作时可随时对照。
 tags: [写作, 教程]
 category: 写作

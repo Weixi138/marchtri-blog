@@ -1,6 +1,6 @@
 ---
 title: 魔法刷石机玩法指南
-published: 2026-08-29
+published: 2026-08-29T16:00:00
 description: BentoBox 魔法刷石机（MagicCobblestoneGenerator 2.10.0）完整指南：开启方法、7 个档位的解锁等级与产出概率、下界与末地专属生成器、宝物掉落表与进阶技巧。
 tags: [Minecraft, 空岛服务器, 魔法刷石机]
 category: 空岛服务器

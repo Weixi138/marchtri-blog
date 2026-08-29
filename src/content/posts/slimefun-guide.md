@@ -1,6 +1,6 @@
 ---
 title: 粘液科技（Slimefun）玩法指南
-published: 2026-08-29
+published: 2026-08-29T17:00:00
 description: Slimefun 2026.1 完整玩法指南：指南书获取、科技树解锁脉络、电力系统与发电机选择、重要多方块结构、三个附属插件（ExoticGarden / SlimefunWarfare / SlimeHUD）详解，以及 Slimefun 物品与服务器经济的规则。
 tags: [Minecraft, 空岛服务器, Slimefun]
 category: 空岛服务器

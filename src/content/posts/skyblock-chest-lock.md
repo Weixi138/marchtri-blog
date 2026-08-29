@@ -1,6 +1,6 @@
 ---
 title: 空岛服务器箱子锁 [Lock] 使用指南
-published: 2026-08-29
+published: 2026-08-29T11:00:00
 description: 在空岛服务器上用一块木牌就能锁住箱子：首行写 [Lock]，第二行自动填所有者，三四行写信任玩家。防破坏、防爆炸、防漏斗，一篇讲清用法和保护范围。
 tags: [Minecraft, 箱子锁]
 category: 空岛服务器

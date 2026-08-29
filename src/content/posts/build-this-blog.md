@@ -1,6 +1,6 @@
 ---
 title: 建站记：从零到一座玻璃花房
-published: 2026-08-29
+published: 2026-08-29T09:00:00
 description: 记录本站的搭建过程——选型、特效引擎设计、性能预算，以及部署到 Cloudflare Pages 的踩坑笔记。
 tags: [建站, Astro, 前端]
 category: 技术
