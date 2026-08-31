@@ -22,7 +22,7 @@ async function getRawSortedPosts() {
 export async function getSortedPosts() {
 	// 克隆避免变异原始 collection data
 	const raw = await getRawSortedPosts();
-	const sorted = raw.map(p => ({ ...p, data: { ...p.data } }));
+	const sorted = raw.map((p) => ({ ...p, data: { ...p.data } }));
 
 	for (let i = 1; i < sorted.length; i++) {
 		sorted[i].data.nextSlug = sorted[i - 1].slug;

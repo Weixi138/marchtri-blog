@@ -2,6 +2,7 @@
  * FXManager — 全站唯一动画入口（docs/02）
  * 单 rAF 循环调度所有 canvas 层；页面切后台自动暂停；
  * prefers-reduced-motion 时只画一次静态帧。
+ * 音频能量等共享状态统一走 `fxState`，图层只读。
  */
 export interface FXLayer {
 	name: string;
@@ -17,13 +18,14 @@ export interface FXLayer {
 	staticFrame?(ctx: CanvasRenderingContext2D, w: number, h: number): void;
 }
 
-/** 全局共享状态：图层只读，Manager 写入 */
+/** 全局共享状态：图层只读，外部（如音乐播放器）经 manager 写入 */
 export const fxState = { audioEnergy: 0 };
 
 export class FXManager {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
 	private layers: FXLayer[] = [];
+	private samplers: Array<() => void> = [];
 	private rafId = 0;
 	private lastT = 0;
 	private running = false;
@@ -31,7 +33,11 @@ export class FXManager {
 	private h = 0;
 	private dpr = 1;
 	reduced: boolean;
-	audioEnergy = 0; // 0..1，由音乐播放器写入
+	private onResize = () => this.resize();
+	private onVisibility = () => {
+		if (document.hidden) this.stop();
+		else this.start();
+	};
 
 	constructor(canvas: HTMLCanvasElement, opts?: { reduced?: boolean }) {
 		this.canvas = canvas;
@@ -42,28 +48,26 @@ export class FXManager {
 			opts?.reduced ??
 			window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		this.resize();
-		window.addEventListener("resize", () => this.resize());
-		document.addEventListener("visibilitychange", () => {
-			if (document.hidden) this.stop();
-			else this.start();
-		});
+		window.addEventListener("resize", this.onResize);
+		document.addEventListener("visibilitychange", this.onVisibility);
 	}
 
 	add(layer: FXLayer): void {
 		this.layers.push(layer);
 	}
 
+	/** 注册每帧采样回调（在单 rAF 循环内执行，禁止自持 rAF） */
+	addSampler(cb: () => void): void {
+		this.samplers.push(cb);
+	}
+
 	setAudioEnergy(v: number): void {
-		this.audioEnergy = Math.max(0, Math.min(1, v));
-		fxState.audioEnergy = this.audioEnergy;
+		fxState.audioEnergy = Math.max(0, Math.min(1, v));
 	}
 
 	private resize(): void {
 		const isCoarse = window.matchMedia("(pointer: coarse)").matches;
-		this.dpr = Math.min(
-			window.devicePixelRatio || 1,
-			isCoarse ? 1.5 : 2,
-		);
+		this.dpr = Math.min(window.devicePixelRatio || 1, isCoarse ? 1.5 : 2);
 		this.w = window.innerWidth;
 		this.h = window.innerHeight;
 		this.canvas.width = Math.floor(this.w * this.dpr);
@@ -95,6 +99,8 @@ export class FXManager {
 
 	private tick(dt: number, t: number): void {
 		const { ctx, w, h } = this;
+		// 采样先行：图层在本帧读到的是最新能量值
+		for (const s of this.samplers) s();
 		ctx.clearRect(0, 0, w, h);
 		for (const layer of this.layers) {
 			if (layer.visible === false) continue;
@@ -114,5 +120,8 @@ export class FXManager {
 	destroy(): void {
 		this.stop();
 		this.layers = [];
+		this.samplers = [];
+		window.removeEventListener("resize", this.onResize);
+		document.removeEventListener("visibilitychange", this.onVisibility);
 	}
 }

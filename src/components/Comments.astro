@@ -6,7 +6,11 @@
 import { Icon } from "astro-icon/components";
 import { commentsConfig, featureConfig } from "../config";
 
-const enabled = featureConfig.comments && !!commentsConfig.repo && !!commentsConfig.repoId && !!commentsConfig.categoryId;
+const enabled =
+	featureConfig.comments &&
+	!!commentsConfig.repo &&
+	!!commentsConfig.repoId &&
+	!!commentsConfig.categoryId;
 ---
 {featureConfig.comments && (
 	<div class="card-base p-4 md:p-6 mb-4 onload-animation">

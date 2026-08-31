@@ -16,7 +16,7 @@ const dayMs = 24 * 60 * 60 * 1000;
 // ---- 文章计数（按日期） ----
 const countByDate = new Map<string, number>();
 const stripMd = (s: string): string =>
-	s.replace(/```[\s\S]*?```/g, "").replace(/[#*`>\-\[\]()!|]/g, "");
+	s.replace(/```[\s\S]*?```/g, "").replace(/[#*`>\-[\]()!|]/g, "");
 
 let totalChars = 0;
 for (const p of posts) {

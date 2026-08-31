@@ -5,8 +5,8 @@
  * 照片数据来自 src/data/photos.json。
  */
 import { featureConfig } from "../config";
-import MainGridLayout from "../layouts/MainGridLayout.astro";
 import photosRaw from "../data/photos.json";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
 
 interface PhotoItem {
 	src: string;
@@ -30,7 +30,7 @@ const photos: PhotoItem[] = photosRaw;
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 			{photos.map((photo, i) => (
 				<div
-					class="group relative rounded-2xl overflow-hidden bg-[var(--btn-regular-bg)] aspect-[4/3] cursor-zoom-in glass-hover-lift onload-animation"
+					class="group relative rounded-[var(--radius-md)] overflow-hidden bg-[var(--btn-regular-bg)] aspect-[4/3] cursor-zoom-in glass-hover-lift onload-animation"
 					style={`animation-delay: ${Math.min(i * 60, 360)}ms`}
 				>
 					<img

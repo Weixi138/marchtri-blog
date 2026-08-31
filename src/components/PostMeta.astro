@@ -26,8 +26,8 @@ const className = Astro.props.class;
 ---
 
 <div class:list={["flex flex-wrap items-center gap-x-4 gap-y-2 text-sm", className]}>
-    <!-- publish date -->
-    <div class="flex items-center gap-1.5 text-50">
+    <!-- publish date（明信片邮戳样式，S4 签名细节） -->
+    <div class="postmark flex items-center gap-1.5 text-50">
         <Icon name="material-symbols:calendar-today-outline-rounded" class="text-[1.1rem] text-[var(--sakura)]"></Icon>
         <span class="font-medium">{formatDateToYYYYMMDD(published)}</span>
     </div>
@@ -58,3 +58,21 @@ const className = Astro.props.class;
         {!(tags && tags.length > 0) && <div class="transition text-50 font-medium">{i18n(I18nKey.noTags)}</div>}
     </div>
 </div>
+
+<style>
+    .postmark {
+        border: 1.5px dashed color-mix(in srgb, var(--sakura) 55%, transparent);
+        border-radius: var(--radius-pill);
+        padding: 0.12rem 0.65rem;
+        transform: rotate(-1.6deg);
+        transition: transform 0.25s var(--ease-spring);
+    }
+    .postmark:hover {
+        transform: rotate(0deg) scale(1.03);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .postmark {
+            transform: none;
+        }
+    }
+</style>

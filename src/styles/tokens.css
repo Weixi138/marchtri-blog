@@ -1,9 +1,8 @@
 /*
  * 设计 Token（docs/01-产品与视觉设计规范.md 的唯一实现源）
- * 品牌色独立于 --hue 体系，保证主题独特性不随色相选择器漂移。
+ * 全站颜色/圆角/布局尺度只允许引用本文件变量；组件内禁止硬编码色值。
  * Fuwari 兼容层变量（--btn-* / --link-* / --toc-* 等）也统一定义在此，
- * 与品牌色绑定；variables.styl 仅保留中性表面色。
- * 深浅模式沿用 Fuwari 的 :root / :root.dark 机制。
+ * 与品牌色绑定。深浅模式沿用 Fuwari 的 :root / :root.dark 机制。
  */
 :root {
   /* 品牌三色 */
@@ -77,23 +76,58 @@
   /* 鼠标跟随光晕 */
   --glow-color: rgba(236, 111, 159, 0.1);
 
-  /* 圆角 */
-  --radius-card: 24px;
+  /* 圆角（唯一阶梯，禁止组件内散写 rounded-*） */
   --radius-btn: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-card: 24px;
   --radius-pill: 999px;
+
+  /* 布局尺度 */
+  --sidebar-width: 17.5rem;
+  --float-panel-top: 5.25rem;
 
   /* 导航条（顶部悬浮玻璃条） */
   --nav-height: 3.5rem;
   --nav-height-collapsed: 2.9rem;
   --nav-offset: 0.75rem;
 
+  /* 深色中性按钮（代码复制钮等深底按钮） */
+  --btn-dark-bg: #6e6168;
+  --btn-dark-bg-hover: #7d6f76;
+  --btn-dark-bg-active: #8c7e85;
+  --btn-dark-success: var(--sakura);
+
+  /* 伪终端窗口三色圆点 */
+  --term-red: #ff5f57;
+  --term-yellow: #febc2e;
+  --term-green: #28c840;
+
+  /* Banner 装饰（樱花枝 SVG / 光斑，叠加在天空 canvas 之上） */
+  --banner-petal: rgba(255, 255, 255, 0.5);
+  --banner-petal-soft: rgba(255, 255, 255, 0.35);
+  --banner-core: rgba(245, 167, 108, 0.7);
+  --banner-blob-1: rgba(255, 255, 255, 0.32);
+  --banner-blob-2: rgba(255, 255, 255, 0.2);
+
+  /* 开屏加载动画底色（由 --bg-base 派生，随深浅模式自动变化） */
+  --loader-bg: linear-gradient(
+    160deg,
+    var(--bg-base),
+    color-mix(in srgb, var(--murasaki) 8%, var(--bg-base)) 55%,
+    color-mix(in srgb, var(--murasaki) 15%, var(--bg-base))
+  );
+
   /* 动效 */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /* 五瓣樱花图标（单色蒙版用，可任意上色；h2 装饰 / 进度条花瓣共用） */
+  --sakura-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6 C14.3 5 14.5 8.3 12 10.5 C9.5 8.3 9.7 5 12 2.6 Z'/%3E%3Cpath d='M12 2.6 C14.3 5 14.5 8.3 12 10.5 C9.5 8.3 9.7 5 12 2.6 Z' transform='rotate(72 12 12)'/%3E%3Cpath d='M12 2.6 C14.3 5 14.5 8.3 12 10.5 C9.5 8.3 9.7 5 12 2.6 Z' transform='rotate(144 12 12)'/%3E%3Cpath d='M12 2.6 C14.3 5 14.5 8.3 12 10.5 C9.5 8.3 9.7 5 12 2.6 Z' transform='rotate(216 12 12)'/%3E%3Cpath d='M12 2.6 C14.3 5 14.5 8.3 12 10.5 C9.5 8.3 9.7 5 12 2.6 Z' transform='rotate(288 12 12)'/%3E%3Ccircle cx='12' cy='12' r='1.8'/%3E%3C/svg%3E");
+
   /* 字体 */
   --font-cute: "LXGW WenKai GB Screen", "LXGW WenKai Screen", "PingFang SC",
-    "Microsoft YaHei", "Roboto", sans-serif;
+    "Microsoft YaHei", sans-serif;
 }
 
 :root.dark {
@@ -135,4 +169,54 @@
 
   --grad-glow: 0 4px 26px rgba(189, 166, 255, 0.35);
   --glow-color: rgba(189, 166, 255, 0.09);
+
+  --btn-dark-bg: #453a4d;
+  --btn-dark-bg-hover: #524459;
+  --btn-dark-bg-active: #5f4f66;
+
+  --banner-petal: rgba(244, 165, 197, 0.32);
+  --banner-petal-soft: rgba(244, 165, 197, 0.22);
+  --banner-core: rgba(255, 184, 119, 0.55);
+  --banner-blob-1: rgba(244, 165, 197, 0.18);
+  --banner-blob-2: rgba(189, 166, 255, 0.12);
+}
+
+/*
+ * 季节 Token（「樱之时空」签名系统）
+ * FX 初始化时按当前月份在 <html> 上写 data-season；
+ * 季节块只覆写随季变化的派生值，品牌三色不随季节改动。
+ * --season-tint：签名微交互（光晕 / 焦点环 / 活动标记）的季节色。
+ */
+:root {
+  --season-tint: var(--sakura);
+}
+:root[data-season="spring"] {
+  --season-tint: #f08bb4;
+}
+:root[data-season="summer"] {
+  --season-tint: #4fb0a2;
+  --banner-blob-1: rgba(126, 200, 190, 0.28);
+}
+:root[data-season="autumn"] {
+  --season-tint: #e8853f;
+  --banner-blob-1: rgba(240, 168, 120, 0.26);
+}
+:root[data-season="winter"] {
+  --season-tint: #7280d8;
+  --banner-blob-1: rgba(160, 170, 240, 0.24);
+}
+:root.dark[data-season="spring"] {
+  --season-tint: #f4a5c5;
+}
+:root.dark[data-season="summer"] {
+  --season-tint: #7fd0c4;
+  --banner-blob-1: rgba(126, 200, 190, 0.14);
+}
+:root.dark[data-season="autumn"] {
+  --season-tint: #ffb877;
+  --banner-blob-1: rgba(240, 168, 120, 0.13);
+}
+:root.dark[data-season="winter"] {
+  --season-tint: #a7b0f5;
+  --banner-blob-1: rgba(160, 170, 240, 0.13);
 }

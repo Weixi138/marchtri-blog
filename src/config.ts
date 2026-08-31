@@ -15,10 +15,6 @@ export const siteConfig: SiteConfig = {
 	title: "MarchTri",
 	subtitle: "写代码，也写生活。",
 	lang: "zh_CN",
-	themeColor: {
-		hue: 335,
-		fixed: true,
-	},
 	banner: {
 		enable: true,
 		// 纯 CSS 渐变装饰 Banner（MainGridLayout），不再使用外链随机图

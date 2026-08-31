@@ -2,12 +2,18 @@
  * FX 初始化：Layout.astro 挂载 canvas 后调用一次。
  * 暴露 window.__fx* 供音乐播放器写入音频能量、命令面板开关特效。
  */
-import { FXManager } from "./manager";
-import { createSkyLayer } from "./layers/sky";
-import { createSakuraLayer } from "./layers/sakura";
+
 import { createClickBurstLayer } from "./layers/click-burst";
-import { fetchScene, periodFromDate } from "./weather";
+import { createSakuraLayer } from "./layers/sakura";
+import { createSkyLayer } from "./layers/sky";
+import { FXManager } from "./manager";
 import type { SceneState } from "./weather";
+import {
+	fetchScene,
+	periodFromDate,
+	seasonFromDate,
+	solarTermFromDate,
+} from "./weather";
 
 export interface FXOptions {
 	sakura: boolean;
@@ -15,24 +21,23 @@ export interface FXOptions {
 	weatherBg: boolean;
 }
 
-const REFRESH_MS = 30 * 60 * 1000;
-
 /** 低内存 / 省流量降级（docs/02 降级矩阵） */
 function isLowEndDevice(): boolean {
 	if (typeof navigator === "undefined") return false;
 	const mem = (navigator as { deviceMemory?: number }).deviceMemory;
 	if (typeof mem === "number" && mem <= 4) return true;
-	const conn = (navigator as { connection?: { saveData?: boolean } }).connection;
+	const conn = (navigator as { connection?: { saveData?: boolean } })
+		.connection;
 	if (conn?.saveData) return true;
 	return false;
 }
 
-export function initFX(opts: FXOptions): void {
-	if (typeof window === "undefined") return;
-	if (window.__fxManager) return; // 幂等
+export function initFX(opts: FXOptions): () => void {
+	if (typeof window === "undefined") return () => {};
+	if (window.__fxManager) return () => {}; // 幂等
 
 	const canvas = document.getElementById("fx-canvas");
-	if (!(canvas instanceof HTMLCanvasElement)) return;
+	if (!(canvas instanceof HTMLCanvasElement)) return () => {};
 
 	// 低内存降级：关闭粒子特效，只保留渐变底色
 	const lowEnd = isLowEndDevice();
@@ -54,21 +59,14 @@ export function initFX(opts: FXOptions): void {
 	manager.add(burst);
 	const burstState = { enabled: effectiveOpts.clickBurst };
 	window.__fxBurst = burstState;
-	window.addEventListener(
-		"pointerdown",
-		(e) => {
-			// 输入控件内点击不撒花，避免干扰表单交互
-			const target = e.target as HTMLElement | null;
-			if (
-				target &&
-				target.closest("input, textarea, select, [contenteditable]")
-			)
-				return;
-			if (!burstState.enabled) return;
-			burst.spawn(e.clientX, e.clientY);
-		},
-		{ passive: true },
-	);
+	const onPointerDown = (e: PointerEvent) => {
+		// 输入控件内点击不撒花，避免干扰表单交互
+		const target = e.target as HTMLElement | null;
+		if (target?.closest("input, textarea, select, [contenteditable]")) return;
+		if (!burstState.enabled) return;
+		burst.spawn(e.clientX, e.clientY);
+	};
+	window.addEventListener("pointerdown", onPointerDown, { passive: true });
 
 	manager.start();
 
@@ -76,9 +74,14 @@ export function initFX(opts: FXOptions): void {
 	const badge = document.getElementById("weather-badge");
 	let weatherOn = effectiveOpts.weatherBg;
 	let lastScene: SceneState | null = null;
+	let lastPeriod = periodFromDate(new Date());
+
+	// 季节属性先行：CSS 季节 token（banner/光晕）不依赖天气请求
+	document.documentElement.dataset.season = seasonFromDate(new Date());
 
 	const applyScene = (scene: SceneState): void => {
 		sky.setScene(scene);
+		document.documentElement.dataset.season = scene.season;
 		if (badge) {
 			if (weatherOn && scene.label) {
 				badge.textContent = scene.label;
@@ -98,22 +101,45 @@ export function initFX(opts: FXOptions): void {
 			.catch(() => {});
 
 	refresh();
-	if (effectiveOpts.weatherBg) {
-		setInterval(() => void refresh(), REFRESH_MS);
-	}
 
-	// 时段变化（跨越 dawn/day/dusk/night 边界）时刷新场景
-	setInterval(() => void refresh(), 10 * 60 * 1000);
+	// 单轮询 + 三重门控：前台可见 && （天气开启 || 跨越时段边界）。
+	// 天气数据另有 30 分钟 localStorage 缓存，命中时不产生网络请求。
+	const pollTimer = setInterval(
+		() => {
+			if (document.hidden) return;
+			const nowPeriod = periodFromDate(new Date());
+			const crossed = nowPeriod !== lastPeriod;
+			if (crossed) lastPeriod = nowPeriod;
+			if (!weatherOn && !crossed) return;
+			void refresh();
+		},
+		10 * 60 * 1000,
+	);
 
 	window.__fxSetWeather = () => {
 		weatherOn = !weatherOn;
 		if (!weatherOn) {
 			// 关闭天气：回到纯时间模式的晴朗场景
-			const period = periodFromDate(new Date());
-			applyScene({ period, precip: "clear", label: "" });
+			const now = new Date();
+			const period = periodFromDate(now);
+			lastPeriod = period;
+			applyScene({
+				period,
+				precip: "clear",
+				label: "",
+				season: seasonFromDate(now),
+				solarTerm: solarTermFromDate(now),
+			});
 		} else {
 			if (lastScene) applyScene(lastScene);
 			void refresh();
 		}
+	};
+
+	return () => {
+		clearInterval(pollTimer);
+		window.removeEventListener("pointerdown", onPointerDown);
+		manager.destroy();
+		window.__fxManager = undefined;
 	};
 }

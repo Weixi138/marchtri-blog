@@ -50,7 +50,8 @@ export function createClickBurstLayer(): FXLayer & {
 				vx: Math.cos(angle) * speed,
 				vy: Math.sin(angle) * speed - 60,
 				life: 1,
-				size: kind === "petal" ? 3.5 + Math.random() * 3 : 1.5 + Math.random() * 2,
+				size:
+					kind === "petal" ? 3.5 + Math.random() * 3 : 1.5 + Math.random() * 2,
 				kind,
 				color:
 					kind === "petal"
@@ -90,14 +91,20 @@ export function createClickBurstLayer(): FXLayer & {
 					ctx.beginPath();
 					ctx.moveTo(0, -p.size * 1.6);
 					ctx.bezierCurveTo(
-						p.size * 1.4, -p.size,
-						p.size * 1.1, p.size,
-						0, p.size * 1.6,
+						p.size * 1.4,
+						-p.size,
+						p.size * 1.1,
+						p.size,
+						0,
+						p.size * 1.6,
 					);
 					ctx.bezierCurveTo(
-						-p.size * 1.1, p.size,
-						-p.size * 1.4, -p.size,
-						0, -p.size * 1.6,
+						-p.size * 1.1,
+						p.size,
+						-p.size * 1.4,
+						-p.size,
+						0,
+						-p.size * 1.6,
 					);
 					ctx.fill();
 				} else {

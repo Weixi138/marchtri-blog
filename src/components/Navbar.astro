@@ -25,7 +25,9 @@ let links: NavBarLink[] = navBarConfig.links.map(
 // 服务端先算好当前高亮，避免首帧闪烁；swup 换页后由下方脚本接管
 const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
 function isActive(linkUrl: string): boolean {
-	const p = (linkUrl.startsWith("http") ? null : url(linkUrl))?.replace(/\/+$/, "") || "/";
+	const p =
+		(linkUrl.startsWith("http") ? null : url(linkUrl))?.replace(/\/+$/, "") ||
+		"/";
 	if (p === "/") return currentPath === "/";
 	return currentPath.startsWith(p);
 }
@@ -42,7 +44,7 @@ function isActive(linkUrl: string): boolean {
             {links.map((l) => {
                 return <a data-navlink aria-label={l.name} href={l.external ? l.url : url(l.url)}
                           target={l.external ? "_blank" : null}
-                          class:list={["nav-link", {"nav-link-active": !l.external && isActive(l.url)}]}
+                          class:list={["nav-link focus-ring", {"nav-link-active": !l.external && isActive(l.url)}]}
                 >
                     {l.name}
                     {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.65rem] opacity-50"></Icon>}
@@ -52,12 +54,12 @@ function isActive(linkUrl: string): boolean {
 
         <div class="flex items-center gap-1">
             {featureConfig.commandPalette && (
-                <button id="palette-switch" class="nav-link !px-2.5" aria-label="命令面板 (Ctrl+K)" title="命令面板 (Ctrl+K)">
+                <button id="palette-switch" class="nav-link focus-ring !px-2.5" aria-label="命令面板 (Ctrl+K)" title="命令面板 (Ctrl+K)">
                     <Icon name="material-symbols:keyboard-command-key" class="text-[1.3rem]" />
                 </button>
             )}
             <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
-            <button id="nav-menu-switch" class="nav-link !px-2.5 lg:hidden" aria-label="打开菜单" aria-expanded="false">
+            <button id="nav-menu-switch" class="nav-link focus-ring !px-2.5 lg:hidden" aria-label="打开菜单" aria-expanded="false">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.4rem]" />
             </button>
         </div>
@@ -68,7 +70,7 @@ function isActive(linkUrl: string): boolean {
          transition-all duration-200 pointer-events-auto p-2" role="menu">
         {links.map((l) => {
             return <a href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
-                      class="group flex justify-between items-center py-2.5 px-4 rounded-xl transition
+                      class="group flex justify-between items-center py-2.5 px-4 rounded-[var(--radius-btn)] transition
                       hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]"
                       role="menuitem"
             >

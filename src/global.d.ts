@@ -21,7 +21,7 @@ declare global {
 		/** 特效层（src/effects/） */
 		__fxManager?: {
 			setAudioEnergy: (v: number) => void;
-			audioEnergy: number;
+			addSampler: (cb: () => void) => void;
 		};
 		__fxSakura?: { enabled: boolean };
 		__fxBurst?: { enabled: boolean };

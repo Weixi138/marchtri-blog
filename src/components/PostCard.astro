@@ -93,8 +93,8 @@ const { remarkPluginFrontmatter } = await entry.render();
 
         <!-- 封面：右侧圆角缩略图（移动端置顶）；无封面用品牌渐变占位 -->
         <div class:list={["relative shrink-0 overflow-hidden", hasCover
-            ? "h-44 md:h-auto md:w-[15.5rem] md:self-stretch md:my-3.5 md:mr-3.5 md:rounded-2xl"
-            : "h-32 md:h-auto md:w-[9.5rem] md:self-stretch md:my-3.5 md:mr-3.5 md:rounded-2xl"]}>
+            ? "h-44 md:h-auto md:w-[15.5rem] md:self-stretch md:my-3.5 md:mr-3.5 md:rounded-[var(--radius-md)]"
+            : "h-32 md:h-auto md:w-[9.5rem] md:self-stretch md:my-3.5 md:mr-3.5 md:rounded-[var(--radius-md)]"]}>
             {hasCover && <ImageWrapper src={image} basePath={path.join("content/posts/", getDir(entry.id))}
                        alt={`Cover Image of ${title}`}
                        class="w-full h-full transition-transform duration-500 group-hover:scale-[1.04]">

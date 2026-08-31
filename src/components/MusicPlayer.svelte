@@ -1,142 +1,151 @@
 <script lang="ts">
-	/**
-	 * 音乐播放器（docs/03 P1-3）— 全自研玻璃 UI。
-	 * 音源：网易云外链直链（构建期解析）或本地曲库。
-	 * 本地曲目经 Web Audio AnalyserNode 驱动背景光晕律动；
-	 * 外链曲目因跨域限制跳过律动（避免 tainted media 被静音）。
-	 */
-	import { onDestroy } from "svelte";
+/**
+ * 音乐播放器（docs/03 P1-3）— 全自研玻璃 UI。
+ * 音源：网易云外链直链（构建期解析）或本地曲库。
+ * 本地曲目经 Web Audio AnalyserNode 驱动背景光晕律动；
+ * 外链曲目因跨域限制跳过律动（避免 tainted media 被静音）。
+ */
+import { onDestroy, onMount } from "svelte";
 
-	interface Track {
-		file: string;
-		title: string;
-		artist?: string;
+interface Track {
+	file: string;
+	title: string;
+	artist?: string;
+}
+
+let {
+	playlist = [] as Track[],
+	defaultVolume = 0.6,
+}: { playlist?: Track[]; defaultVolume?: number } = $props();
+
+let open = $state(false);
+let index = $state(0);
+let playing = $state(false);
+let volume = $state(defaultVolume);
+let progress = $state(0);
+let currentTime = $state(0);
+let duration = $state(0);
+
+let audioEl: HTMLAudioElement | undefined = $state();
+let audioCtx: AudioContext | null = null;
+let analyser: AnalyserNode | null = null;
+let sourceCreated = false;
+let samplerRegistered = false;
+const errored = new Set<number>();
+
+const isLocal = $derived(
+	Boolean(playlist[index]?.file) && playlist[index].file.startsWith("/"),
+);
+
+$effect(() => {
+	const saved = Number(localStorage.getItem("fx-music-volume"));
+	if (!Number.isNaN(saved) && saved > 0) volume = saved;
+});
+
+$effect(() => {
+	localStorage.setItem("fx-music-volume", String(volume));
+	localStorage.setItem("fx-music-last", String(index));
+	if (audioEl) audioEl.volume = volume;
+});
+
+function ensureGraph(): void {
+	if (!audioEl || sourceCreated || !isLocal) return;
+	try {
+		audioCtx = new AudioContext();
+		const src = audioCtx.createMediaElementSource(audioEl);
+		analyser = audioCtx.createAnalyser();
+		analyser.fftSize = 256;
+		src.connect(analyser);
+		analyser.connect(audioCtx.destination);
+		sourceCreated = true;
+	} catch {
+		analyser = null; // Web Audio 不可用：静默降级，播放不受影响
 	}
+}
 
-	let {
-		playlist = [] as Track[],
-		defaultVolume = 0.6,
-	}: { playlist?: Track[]; defaultVolume?: number } = $props();
-
-	let open = $state(false);
-	let index = $state(0);
-	let playing = $state(false);
-	let volume = $state(defaultVolume);
-	let progress = $state(0);
-	let currentTime = $state(0);
-	let duration = $state(0);
-
-	let audioEl: HTMLAudioElement | undefined = $state();
-	let audioCtx: AudioContext | null = null;
-	let analyser: AnalyserNode | null = null;
-	let sourceCreated = false;
-	let rafId = 0;
-	const errored = new Set<number>();
-
-	const isLocal = $derived(
-		Boolean(playlist[index]?.file) && playlist[index].file.startsWith("/"),
-	);
-
-	$effect(() => {
-		const saved = Number(localStorage.getItem("fx-music-volume"));
-		if (!Number.isNaN(saved) && saved > 0) volume = saved;
-	});
-
-	$effect(() => {
-		localStorage.setItem("fx-music-volume", String(volume));
-		localStorage.setItem("fx-music-last", String(index));
-		if (audioEl) audioEl.volume = volume;
-	});
-
-	function ensureGraph(): void {
-		if (!audioEl || sourceCreated || !isLocal) return;
-		try {
-			audioCtx = new AudioContext();
-			const src = audioCtx.createMediaElementSource(audioEl);
-			analyser = audioCtx.createAnalyser();
-			analyser.fftSize = 256;
-			src.connect(analyser);
-			analyser.connect(audioCtx.destination);
-			sourceCreated = true;
-		} catch {
-			analyser = null; // Web Audio 不可用：静默降级，播放不受影响
-		}
+/** 能量采样并入 FXManager 单循环（禁止组件自持 rAF） */
+function sampleEnergy(): void {
+	if (playing && analyser) {
+		const data = new Uint8Array(analyser.frequencyBinCount);
+		analyser.getByteFrequencyData(data);
+		let sum = 0;
+		const n = Math.floor(data.length / 4); // 低频段
+		for (let i = 0; i < n; i++) sum += data[i];
+		window.__fxManager?.setAudioEnergy(Math.min(1, sum / n / 180));
+	} else {
+		window.__fxManager?.setAudioEnergy(0);
 	}
+}
 
-	function pumpEnergy(): void {
-		if (playing && analyser) {
-			const data = new Uint8Array(analyser.frequencyBinCount);
-			analyser.getByteFrequencyData(data);
-			let sum = 0;
-			const n = Math.floor(data.length / 4); // 低频段
-			for (let i = 0; i < n; i++) sum += data[i];
-			window.__fxManager?.setAudioEnergy(Math.min(1, sum / n / 180));
-		} else {
-			window.__fxManager?.setAudioEnergy(0);
-		}
-		rafId = requestAnimationFrame(pumpEnergy);
-	}
+function registerSampler(): void {
+	if (samplerRegistered || !window.__fxManager) return;
+	window.__fxManager.addSampler(sampleEnergy);
+	samplerRegistered = true;
+}
 
-	function play(): void {
-		if (!audioEl) return;
-		ensureGraph();
-		void audioCtx?.resume();
-		void audioEl.play();
-	}
+function play(): void {
+	if (!audioEl) return;
+	registerSampler();
+	ensureGraph();
+	void audioCtx?.resume();
+	void audioEl.play();
+}
 
-	function toggle(): void {
-		if (!audioEl) return;
-		if (playing) audioEl.pause();
-		else play();
-	}
+function toggle(): void {
+	if (!audioEl) return;
+	if (playing) audioEl.pause();
+	else play();
+}
 
-	function select(i: number): void {
-		if (errored.size >= playlist.length) return; // 全部不可用
-		index = (i + playlist.length) % playlist.length;
-		playing = true;
-		setTimeout(play, 30);
-	}
+function select(i: number): void {
+	if (errored.size >= playlist.length) return; // 全部不可用
+	index = (i + playlist.length) % playlist.length;
+	playing = true;
+	setTimeout(play, 30);
+}
 
-	function next(): void {
-		select(index + 1);
-	}
-	function prev(): void {
-		select(index - 1);
-	}
+function next(): void {
+	select(index + 1);
+}
+function prev(): void {
+	select(index - 1);
+}
 
-	function onPlay(): void {
-		playing = true;
-		if (!rafId) rafId = requestAnimationFrame(pumpEnergy);
-	}
-	function onPause(): void {
-		playing = false;
-	}
-	function onError(): void {
-		// 单曲不可用（如 VIP 歌曲外链失效）：标记并自动跳下一首
-		errored.add(index);
-		if (playing) next();
-	}
+function onPlay(): void {
+	playing = true;
+}
+function onPause(): void {
+	playing = false;
+}
+function onError(): void {
+	// 单曲不可用（如 VIP 歌曲外链失效）：标记并自动跳下一首
+	errored.add(index);
+	if (playing) next();
+}
 
-	function onTimeUpdate(): void {
-		if (audioEl && audioEl.duration) {
-			progress = audioEl.currentTime / audioEl.duration;
-			currentTime = audioEl.currentTime;
-			duration = audioEl.duration;
-		}
+function onTimeUpdate(): void {
+	if (audioEl?.duration) {
+		progress = audioEl.currentTime / audioEl.duration;
+		currentTime = audioEl.currentTime;
+		duration = audioEl.duration;
 	}
+}
 
-	onDestroy(() => {
-		if (typeof window === "undefined") return; // SSR 时 onDestroy 会立即执行
-		cancelAnimationFrame(rafId);
-		void audioCtx?.close();
-	});
+onMount(() => {
+	registerSampler();
+});
 
-	const fmt = (t: number): string => {
-		if (!Number.isFinite(t)) return "0:00";
-		const m = Math.floor(t / 60);
-		const s = Math.floor(t % 60);
-		return `${m}:${String(s).padStart(2, "0")}`;
-	};
+onDestroy(() => {
+	if (typeof window === "undefined") return; // SSR 时 onDestroy 会立即执行
+	void audioCtx?.close();
+});
+
+const fmt = (t: number): string => {
+	if (!Number.isFinite(t)) return "0:00";
+	const m = Math.floor(t / 60);
+	const s = Math.floor(t % 60);
+	return `${m}:${String(s).padStart(2, "0")}`;
+};
 </script>
 
 {#if playlist.length}

@@ -62,8 +62,6 @@ export function initTitleEasterEgg(): void {
 	if (typeof window === "undefined") return;
 	const original = document.title;
 	document.addEventListener("visibilitychange", () => {
-		document.title = document.hidden
-			? "(´･ω･`) 页面飞走了…"
-			: original;
+		document.title = document.hidden ? "(´･ω･`) 页面飞走了…" : original;
 	});
 }

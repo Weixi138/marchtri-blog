@@ -28,7 +28,7 @@
         @apply transition rounded-md p-1.5 -m-1.5 expand-animation;
     }
     .float-panel {
-        @apply top-[5.25rem] rounded-[var(--radius-card)] overflow-hidden transition shadow-xl dark:shadow-none
+        @apply top-[var(--float-panel-top)] rounded-[var(--radius-card)] overflow-hidden transition shadow-xl dark:shadow-none
         border border-[var(--stroke-glass)]
         backdrop-blur-[var(--blur-glass)] backdrop-saturate-[1.4];
         background: var(--bg-glass-strong);
@@ -105,11 +105,10 @@
 
     .btn-regular-dark {
         @apply flex items-center justify-center
-        bg-[oklch(0.45_0.01_var(--hue))] hover:bg-[oklch(0.50_0.01_var(--hue))] active:bg-[oklch(0.55_0.01_var(--hue))]
-        dark:bg-[oklch(0.30_0.02_var(--hue))] dark:hover:bg-[oklch(0.35_0.03_var(--hue))] dark:active:bg-[oklch(0.40_0.03_var(--hue))]
+        bg-[var(--btn-dark-bg)] hover:bg-[var(--btn-dark-bg-hover)] active:bg-[var(--btn-dark-bg-active)]
     }
     .btn-regular-dark.success {
-        @apply bg-[oklch(0.75_0.14_var(--hue))] dark:bg-[oklch(0.75_0.14_var(--hue))]
+        @apply bg-[var(--btn-dark-success)] dark:bg-[var(--btn-dark-success)]
     }
 }
 
@@ -155,7 +154,7 @@ body {
     -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
 }
 
-/* 卡片 hover：弹性上浮 + 樱色辉光描边 */
+/* 卡片 hover：弹性上浮 + 季节色辉光描边 */
 .glass-hover-lift {
     transition: transform 0.25s var(--ease-spring), box-shadow 0.3s var(--ease-out-soft),
         border-color 0.3s var(--ease-out-soft);
@@ -163,9 +162,33 @@ body {
 .glass-hover-lift:hover {
     transform: translateY(-3px);
     box-shadow:
-        0 12px 40px color-mix(in srgb, var(--sakura) 22%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--sakura) 35%, transparent) inset;
-    border-color: color-mix(in srgb, var(--sakura) 40%, var(--stroke-glass));
+        0 12px 40px color-mix(in srgb, var(--season-tint) 22%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--season-tint) 35%, transparent) inset;
+    border-color: color-mix(in srgb, var(--season-tint) 40%, var(--stroke-glass));
+}
+
+/* 樱花环焦点：键盘导航统一焦点环（描边走季节色，深浅模式自动适配） */
+.focus-ring:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 2px var(--bg-base),
+        0 0 0 4px color-mix(in srgb, var(--season-tint) 75%, transparent);
+}
+
+/* 花瓣形活动标记：导航 / 目录活动项左侧竖标（S6） */
+.petal-marker {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 4px;
+    height: 1.05em;
+    transform: translateY(-50%);
+    border-radius: 999px 3px 999px 3px;
+    background: linear-gradient(
+        180deg,
+        var(--season-tint),
+        color-mix(in srgb, var(--season-tint) 45%, var(--murasaki))
+    );
 }
 
 /* 滚动入场：配合 FXManager 的 IntersectionObserver 添加 .in-view */
@@ -263,7 +286,7 @@ body {
     }
 }
 
-/* 文章阅读进度条 */
+/* 文章阅读进度条（前端跟跑一片季节色花瓣，S4 签名细节） */
 #reading-progress {
     position: fixed;
     left: 0;
@@ -276,6 +299,23 @@ body {
     box-shadow: 0 0 10px color-mix(in srgb, var(--sakura) 45%, transparent);
     pointer-events: none;
     transition: width 0.1s linear;
+}
+#reading-progress::after {
+    content: "";
+    position: absolute;
+    right: -6px;
+    top: -4px;
+    width: 12px;
+    height: 12px;
+    background: var(--season-tint);
+    -webkit-mask: var(--sakura-icon) center / contain no-repeat;
+    mask: var(--sakura-icon) center / contain no-repeat;
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--season-tint) 60%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+    #reading-progress::after {
+        display: none;
+    }
 }
 
 /* ===== 顶部悬浮玻璃导航条（docs/01：滚动时收缩高度） ===== */
@@ -300,7 +340,7 @@ body {
 }
 #navbar-wrapper.nav-collapsed .nav-topbar {
     height: var(--nav-height-collapsed);
-    box-shadow: 0 4px 20px rgba(190, 120, 160, 0.14);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--sakura) 14%, transparent);
 }
 .nav-link {
     position: relative;
@@ -323,9 +363,24 @@ body {
 }
 .nav-link-active,
 .nav-link-active:hover {
-    background: color-mix(in srgb, var(--sakura) 14%, transparent);
+    background: color-mix(in srgb, var(--season-tint) 14%, transparent);
     color: var(--sakura-deep);
     font-weight: 600;
+}
+.nav-link-active::before {
+    content: "";
+    position: absolute;
+    left: 0.3rem;
+    top: 50%;
+    width: 4px;
+    height: 1.05em;
+    transform: translateY(-50%);
+    border-radius: 999px 3px 999px 3px;
+    background: linear-gradient(
+        180deg,
+        var(--season-tint),
+        color-mix(in srgb, var(--season-tint) 45%, var(--murasaki))
+    );
 }
 :root.dark .nav-link-active,
 :root.dark .nav-link-active:hover {
@@ -357,7 +412,7 @@ body {
     right: 12%;
     width: 22rem;
     height: 22rem;
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.32), transparent 70%);
+    background: radial-gradient(closest-side, var(--banner-blob-1), transparent 70%);
     animation: fx-blob-drift 18s var(--ease-out-soft) infinite alternate;
 }
 .banner-blob-2 {
@@ -365,7 +420,7 @@ body {
     left: 6%;
     width: 26rem;
     height: 26rem;
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.2), transparent 70%);
+    background: radial-gradient(closest-side, var(--banner-blob-2), transparent 70%);
     animation: fx-blob-drift 24s var(--ease-out-soft) infinite alternate-reverse;
 }
 .banner-branch {
@@ -379,6 +434,25 @@ body {
 }
 :root.dark .banner-branch {
     opacity: 0.32;
+}
+
+/* 四季 Banner（S2）：四幅 SVG 常驻，按 html[data-season] 显示对应季节；
+   init.ts 注入属性前先显示春樱，避免首帧空白 */
+.banner-season {
+    display: none;
+}
+:root:not([data-season]) .banner-season-spring,
+:root[data-season="spring"] .banner-season-spring {
+    display: block;
+}
+:root[data-season="summer"] .banner-season-summer {
+    display: block;
+}
+:root[data-season="autumn"] .banner-season-autumn {
+    display: block;
+}
+:root[data-season="winter"] .banner-season-winter {
+    display: block;
 }
 
 /* reduced-motion：静态但完整（docs/02 降级矩阵） */

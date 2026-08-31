@@ -67,7 +67,7 @@ async function checkForUpdates(): Promise<void> {
 export function initAutoRefresh(): void {
 	if (typeof window === "undefined") return;
 
-	const banner = createBanner();
+	createBanner();
 
 	document.getElementById("fx-refresh-btn")?.addEventListener("click", () => {
 		window.location.reload();

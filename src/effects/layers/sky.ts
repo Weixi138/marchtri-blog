@@ -4,8 +4,8 @@
  */
 import type { FXLayer } from "../manager";
 import { fxState } from "../manager";
-import type { SceneState, SkyPeriod } from "../weather";
-import { periodFromDate } from "../weather";
+import type { SceneState, Season, SkyPeriod } from "../weather";
+import { periodFromDate, seasonFromDate, solarTermFromDate } from "../weather";
 
 type RGB = [number, number, number];
 type Palette = { top: RGB; mid: RGB; bottom: RGB };
@@ -15,7 +15,11 @@ const LIGHT: Record<SkyPeriod, Palette> = {
 	dawn: { top: [249, 213, 221], mid: [253, 238, 222], bottom: [205, 180, 244] },
 	day: { top: [207, 234, 246], mid: [253, 241, 245], bottom: [232, 246, 240] },
 	dusk: { top: [242, 180, 140], mid: [211, 139, 192], bottom: [107, 87, 158] },
-	night: { top: [236, 232, 246], mid: [214, 205, 236], bottom: [186, 173, 220] }, // 浅色主题的夜晚 = 柔和暮色
+	night: {
+		top: [236, 232, 246],
+		mid: [214, 205, 236],
+		bottom: [186, 173, 220],
+	}, // 浅色主题的夜晚 = 柔和暮色
 };
 const DARK: Record<SkyPeriod, Palette> = {
 	dawn: { top: [42, 32, 56], mid: [74, 52, 72], bottom: [120, 78, 96] },
@@ -32,6 +36,25 @@ const lerpRGB = (a: RGB, b: RGB, k: number): RGB => [
 ];
 const rgb = (c: RGB, alpha = 1) =>
 	`rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
+
+/** 季节签名色：春樱粉 / 夏青碧 / 秋暖橙 / 冬蓝紫 */
+const SEASON_TINT: Record<Season, RGB> = {
+	spring: [247, 139, 184],
+	summer: [110, 198, 188],
+	autumn: [240, 168, 120],
+	winter: [143, 154, 232],
+};
+
+const TINT_K = 0.1; // 混入比例：保持品牌基调，仅做季节微染
+function mixPalette(p: Palette, season: Season): Palette {
+	const t = SEASON_TINT[season];
+	const mix = (c: RGB): RGB => [
+		lerp(c[0], t[0], TINT_K),
+		lerp(c[1], t[1], TINT_K),
+		lerp(c[2], t[2], TINT_K),
+	];
+	return { top: mix(p.top), mid: mix(p.mid), bottom: mix(p.bottom) };
+}
 
 interface Star {
 	x: number;
@@ -64,10 +87,13 @@ interface CloudBlob {
 }
 
 export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
+	const now0 = new Date();
 	let scene: SceneState = {
-		period: periodFromDate(new Date()),
+		period: periodFromDate(now0),
 		precip: "clear",
 		label: "",
+		season: seasonFromDate(now0),
+		solarTerm: solarTermFromDate(now0),
 	};
 	let lastW = -1;
 
@@ -85,8 +111,11 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 	let flashAlpha = 0;
 	let nextFlash = 5;
 
+	// 主题标志缓存：classList 每帧读取开销大，改由 MutationObserver 驱动
+	let darkTheme = document.documentElement.classList.contains("dark");
+
 	function isDarkTheme(): boolean {
-		return document.documentElement.classList.contains("dark");
+		return darkTheme;
 	}
 
 	function seedParticles(w: number, h: number): void {
@@ -125,7 +154,7 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 
 	function currentPalette(): Palette {
 		const set = isDarkTheme() ? DARK : LIGHT;
-		return set[scene.period];
+		return mixPalette(set[scene.period], scene.season);
 	}
 
 	function retarget(): void {
@@ -134,6 +163,19 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 
 	retarget();
 	cur = target;
+
+	// 主题切换即时生效：监听 <html> 的 class，替代每帧 classList 读取
+	new MutationObserver(() => {
+		darkTheme = document.documentElement.classList.contains("dark");
+		retarget();
+	}).observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ["class"],
+	});
+
+	// 太阳/月亮横坐标按小时缓慢移动，60s 缓存一次即可
+	let hourFrac = 0;
+	let hourCacheT = -1;
 
 	function nightness(): number {
 		if (scene.period === "night") return isDarkTheme() ? 1 : 0;
@@ -152,7 +194,8 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 			if (s.precip !== "snow") snow = [];
 			if (s.precip !== "cloudy" && s.precip !== "fog") clouds = [];
 			if (s.precip === "rain" || s.precip === "storm") {
-				if (rain.length === 0 && lastW > 0) seedParticles(lastW, window.innerHeight);
+				if (rain.length === 0 && lastW > 0)
+					seedParticles(lastW, window.innerHeight);
 			}
 			if (s.precip === "snow" && snow.length === 0 && lastW > 0) {
 				seedParticles(lastW, window.innerHeight);
@@ -165,7 +208,6 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 				seedParticles(w, h);
 				retarget();
 			}
-			retarget(); // 主题类切换即时生效
 			if (paletteT < 1) paletteT = Math.min(1, paletteT + dt / 2);
 			const k = paletteT * paletteT * (3 - 2 * paletteT);
 			cur = {
@@ -196,8 +238,11 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 
 			// ---- 太阳/月亮光晕，音频能量放大呼吸 ----
 			const energy = fxState.audioEnergy;
-			const now = new Date();
-			const hourFrac = (now.getHours() + now.getMinutes() / 60) / 24;
+			if (hourCacheT < 0 || t - hourCacheT >= 60) {
+				const now = new Date();
+				hourFrac = (now.getHours() + now.getMinutes() / 60) / 24;
+				hourCacheT = t;
+			}
 			const gx = w * (0.15 + hourFrac * 0.7);
 			const gy = h * (scene.period === "night" ? 0.22 : 0.3);
 			const baseR = Math.min(w, h) * (scene.period === "night" ? 0.16 : 0.22);
@@ -298,7 +343,10 @@ export function createSkyLayer(): FXLayer & { setScene(s: SceneState): void } {
 		staticFrame(ctx, w, h) {
 			seedParticles(w, h);
 			const set = isDarkTheme() ? DARK : LIGHT;
-			const p = set[periodFromDate(new Date())];
+			const p = mixPalette(
+				set[periodFromDate(new Date())],
+				seasonFromDate(new Date()),
+			);
 			const grad = ctx.createLinearGradient(0, 0, 0, h);
 			grad.addColorStop(0, rgb(p.top));
 			grad.addColorStop(0.55, rgb(p.mid));

@@ -6,8 +6,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import Player from "./MusicPlayer.svelte";
 import { featureConfig, musicConfig } from "../config";
+import Player from "./MusicPlayer.svelte";
 
 interface Track {
 	file: string;
@@ -20,7 +20,9 @@ const CACHE = path.resolve("src/data/music-cache.json");
 function readCache(): Track[] | null {
 	try {
 		const data = JSON.parse(fs.readFileSync(CACHE, "utf-8"));
-		return Array.isArray(data.tracks) && data.tracks.length > 0 ? data.tracks : null;
+		return Array.isArray(data.tracks) && data.tracks.length > 0
+			? data.tracks
+			: null;
 	} catch {
 		return null;
 	}
@@ -30,7 +32,11 @@ function writeCache(tracks: Track[]): void {
 	try {
 		fs.writeFileSync(
 			CACHE,
-			JSON.stringify({ fetchedAt: new Date().toISOString(), tracks }, null, "\t"),
+			JSON.stringify(
+				{ fetchedAt: new Date().toISOString(), tracks },
+				null,
+				"\t",
+			),
 		);
 	} catch {
 		/* 只读环境忽略 */
@@ -41,9 +47,12 @@ async function fetchNeteaseTracks(id: string): Promise<Track[] | null> {
 	try {
 		const ctrl = new AbortController();
 		const timer = setTimeout(() => ctrl.abort(), 8000);
-		const res = await fetch(`https://music.163.com/api/playlist/detail?id=${id}`, {
-			signal: ctrl.signal,
-		});
+		const res = await fetch(
+			`https://music.163.com/api/playlist/detail?id=${id}`,
+			{
+				signal: ctrl.signal,
+			},
+		);
 		clearTimeout(timer);
 		if (!res.ok) return null;
 		const data = (await res.json()) as {
@@ -58,7 +67,10 @@ async function fetchNeteaseTracks(id: string): Promise<Track[] | null> {
 		const tracks = (data.result?.tracks ?? []).slice(0, 50).map((t) => ({
 			file: `https://music.163.com/song/media/outer/url?id=${t.id}.mp3`,
 			title: t.name ?? "未知曲目",
-			artist: (t.artists ?? []).map((a) => a.name ?? "").filter(Boolean).join(", "),
+			artist: (t.artists ?? [])
+				.map((a) => a.name ?? "")
+				.filter(Boolean)
+				.join(", "),
 		}));
 		return tracks.length > 0 ? tracks : null;
 	} catch {

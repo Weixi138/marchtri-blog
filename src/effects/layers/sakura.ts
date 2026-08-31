@@ -29,14 +29,18 @@ const DARK_COLORS = [
 	"rgba(189, 166, 255, 0.5)",
 ];
 
-function drawPetal(
-	ctx: CanvasRenderingContext2D,
-	size: number,
-): void {
+function drawPetal(ctx: CanvasRenderingContext2D, size: number): void {
 	ctx.beginPath();
 	ctx.moveTo(0, -size);
 	ctx.bezierCurveTo(size * 0.9, -size * 0.6, size * 0.7, size * 0.7, 0, size);
-	ctx.bezierCurveTo(-size * 0.7, size * 0.7, -size * 0.9, -size * 0.6, 0, -size);
+	ctx.bezierCurveTo(
+		-size * 0.7,
+		size * 0.7,
+		-size * 0.9,
+		-size * 0.6,
+		0,
+		-size,
+	);
 	ctx.fill();
 }
 
@@ -48,10 +52,9 @@ export function createSakuraLayer(
 
 	function seed(w: number, h: number): void {
 		const count = w < 768 ? 14 : 24;
-		const colors =
-			document.documentElement.classList.contains("dark")
-				? DARK_COLORS
-				: LIGHT_COLORS;
+		const colors = document.documentElement.classList.contains("dark")
+			? DARK_COLORS
+			: LIGHT_COLORS;
 		petals = Array.from({ length: count }, (_, i) => ({
 			x: Math.random() * w,
 			y: Math.random() * h,

@@ -32,3 +32,36 @@ yarn.lock
 
 # 视觉验收截图（本地临时产物）
 .acceptance/
+
+# 密钥与凭证（禁止入库）
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+secrets.*
+secrets/
+credentials.json
+credentials/
+*.token
+.netrc
+wrangler.toml.bak
+.cloudflare/
+
+# AI 工具 / 编辑器本地配置与缓存
+.ssh/
+.dsh/
+.claude/
+.qoder/
+.cursor/
+.windsurf/
+.continue/
+.aider*
+.codex/
+CLAUDE.md
+.vscode/
+*.swp
