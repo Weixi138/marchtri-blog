@@ -12,7 +12,18 @@ function bindTypewriter(): void {
 	el.dataset.bound = "1";
 
 	const cursor = document.getElementById("typewriter-cursor");
-	const lines = heroConfig.typewriterLines;
+	const season = document.documentElement.dataset.season;
+	const notes = heroConfig.seasonNotes as
+		| Record<string, { tag: string; line: string }>
+		| undefined;
+	const note = season ? notes?.[season] : undefined;
+	if (note) {
+		const badge = document.getElementById("season-badge-text");
+		if (badge) badge.textContent = note.tag;
+	}
+	const lines = note
+		? [note.line, ...heroConfig.typewriterLines]
+		: heroConfig.typewriterLines;
 	if (!lines.length) return;
 
 	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

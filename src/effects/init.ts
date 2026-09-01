@@ -6,7 +6,7 @@
 import { createClickBurstLayer } from "./layers/click-burst";
 import { createSakuraLayer } from "./layers/sakura";
 import { createSkyLayer } from "./layers/sky";
-import { FXManager } from "./manager";
+import { FXManager, fxState } from "./manager";
 import type { SceneState } from "./weather";
 import {
 	fetchScene,
@@ -76,12 +76,17 @@ export function initFX(opts: FXOptions): () => void {
 	let lastScene: SceneState | null = null;
 	let lastPeriod = periodFromDate(new Date());
 
-	// 季节属性先行：CSS 季节 token（banner/光晕）不依赖天气请求
-	document.documentElement.dataset.season = seasonFromDate(new Date());
+	// 季节属性先行：CSS 季节 token（banner/光晕）与四季粒子都不依赖天气请求
+	const season0 = seasonFromDate(new Date());
+	document.documentElement.dataset.season = season0;
+	fxState.season = season0;
+	fxState.night = periodFromDate(new Date()) === "night";
 
 	const applyScene = (scene: SceneState): void => {
 		sky.setScene(scene);
 		document.documentElement.dataset.season = scene.season;
+		fxState.season = scene.season;
+		fxState.night = scene.period === "night";
 		if (badge) {
 			if (weatherOn && scene.label) {
 				badge.textContent = scene.label;

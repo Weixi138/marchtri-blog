@@ -32,10 +32,12 @@ yarn.lock
 
 # 视觉验收截图（本地临时产物）
 .acceptance/
+.deployed-sha
 
 # 密钥与凭证（禁止入库）
 .env.*
 !.env.example
+.dev.vars
 *.pem
 *.key
 *.p12
@@ -62,6 +64,9 @@ wrangler.toml.bak
 .continue/
 .aider*
 .codex/
+.freebuff/
+.zcode/
+.wrangler/
 CLAUDE.md
 .vscode/
 *.swp

@@ -98,6 +98,7 @@ export const featureConfig: FeatureConfig = {
 	photoWall: true,
 	devGuard: false,
 	autoRefresh: true,
+	adminPanel: true,
 };
 
 export const heroConfig: HeroConfig = {
@@ -108,14 +109,21 @@ export const heroConfig: HeroConfig = {
 		"按 Ctrl + K 打开命令面板试试？",
 		"按反引号 ` 可以呼出神秘终端哦～",
 	],
+	seasonNotes: {
+		spring: { tag: "春 · 樱吹雪", line: "樱瓣落在肩头，是春天写的信。" },
+		summer: { tag: "夏 · 蝉时雨", line: "晚风、萤火与冰镇西瓜，夏天正当时。" },
+		autumn: { tag: "秋 · 枫时雨", line: "枫叶红了，把秋天夹进书页里。" },
+		winter: { tag: "冬 · 雪见夜", line: "落雪有声，围炉夜话正合适。" },
+	},
 };
 
 /**
  * 音乐配置
  * - neteasePlaylistId: 网易云音乐歌单 ID（歌单页 URL 里 playlist?id=xxx 的数字）。
- *   填了就优先渲染网易云官方外链播放器；留空则使用本地歌单。
- *   注意：网易云 iframe 受浏览器跨域限制，无法做音频律动；律动仅本地曲目支持。
- * - playlist: 本地歌单（public/music/ 下的音频）。
+ *   填了则构建期经公开接口拉取曲目（播放器为全自研玻璃组件 + 外链直链，无 iframe）；
+ *   留空则只使用本地歌单。
+ *   注意：外链曲目因跨域限制不做音频律动，律动仅本地曲目支持。
+ * - playlist: 本地歌单（public/music/ 下的音频），恒并入播放列表尾部，作外链全挂时的兜底。
  */
 export const musicConfig: MusicConfig = {
 	neteasePlaylistId: "18088651885",

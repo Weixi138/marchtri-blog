@@ -10,7 +10,7 @@ MarchTri 的个人博客：**毛玻璃优雅 × 日系可爱**融合风（樱花
 
 - **Astro 5**（静态输出）+ **Tailwind CSS** + **Svelte**（交互组件）+ **TypeScript**
 - 内容引擎基于开源主题 [Fuwari](https://github.com/saicaca/fuwari)（MIT，须保留署名），**视觉层为全站自研**，勿沿用其默认配色
-- 部署：Cloudflare Pages（纯静态，无服务端）
+- 部署：Cloudflare Workers（静态资产 + 后台 API Worker）
 
 ## 常用命令
 
@@ -20,7 +20,7 @@ pnpm dev            # 本地开发 http://localhost:4321
 pnpm build          # 产物构建到 dist/（交付前必须零报错）
 pnpm preview        # 预览构建产物
 pnpm astro check    # 类型与 .astro 语法检查
-wrangler pages deploy dist   # 部署（首次需 wrangler login）
+pnpm deploy         # 部署到 Cloudflare Workers（首次需 wrangler login）
 ```
 
 ## 目录结构（关键）

@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 /**
- * Cloudflare Pages 一键部署（docs/05 路线 A）。
+ * Cloudflare Workers 一键部署（docs/05 · B1 收束后的唯一路线）。
  * 用法：node scripts/deploy.mjs   （首次会触发 wrangler login 浏览器授权）
- * 项目名可用环境变量 CF_PROJECT 覆盖，默认 sakura-mist。
+ * 前置：pnpm build 已产出 dist/；wrangler.jsonc 配置 assets + main。
+ * 注意：部署目标项目名在 wrangler.jsonc 里定义（当前为 marchtri-blog），
+ * 此处不做硬编码或环境变量覆盖，改名请以 wrangler.jsonc 为准。
  */
 import { spawnSync } from "node:child_process";
 
-const project = process.env.CF_PROJECT || "sakura-mist";
-
-console.log(`▶ 部署 dist/ 到 Cloudflare Pages 项目「${project}」…`);
-const result = spawnSync(
-	"npx",
-	["wrangler", "pages", "deploy", "dist", `--project-name=${project}`],
-	{ stdio: "inherit", shell: true },
-);
+console.log("▶ 构建产物部署到 Cloudflare Worker「marchtri-blog」…");
+const result = spawnSync("npx", ["wrangler", "deploy"], {
+	stdio: "inherit",
+	shell: true,
+});
 
 process.exit(result.status ?? 1);

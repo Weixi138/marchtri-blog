@@ -1,0 +1,16 @@
+---
+/**
+ * 博客后台（B4）：登录 + 在线发文。入口不进导航，直接访问 /admin/。
+ * 实际界面为客户端 Svelte 组件（client:only），数据走 /api/admin/*。
+ */
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import AdminPanel from "../components/AdminPanel.svelte";
+import { featureConfig } from "../config";
+
+if (!featureConfig.adminPanel) {
+	return Astro.notFound("博客后台未启用");
+}
+---
+<MainGridLayout title="博客后台">
+    <AdminPanel client:only="svelte"></AdminPanel>
+</MainGridLayout>

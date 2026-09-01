@@ -5,6 +5,7 @@
  */
 import { getCollection } from "astro:content";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { formatDateToYYYYMMDD } from "../utils/date-utils";
 
 const posts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
 	(a, b) => a.data.published.valueOf() - b.data.published.valueOf(),
@@ -20,13 +21,17 @@ const stripMd = (s: string): string =>
 
 let totalChars = 0;
 for (const p of posts) {
-	const key = p.data.published.toISOString().slice(0, 10);
+	// 按北京时区归属日期（toISOString/构建机本地方法会在凌晨错一天）
+	const key = formatDateToYYYYMMDD(p.data.published);
 	countByDate.set(key, (countByDate.get(key) ?? 0) + 1);
 	totalChars += stripMd(p.body ?? "").length;
 }
 
 // ---- 热力图数据：近 52 周，从周一开始 ----
-const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+// 以北京时区"今天"映射到 UTC 午夜，后续格子全部按 UTC 日期推进，
+// 则 toISOString() 取出的恰好是北京日期，与文章计数键严格同口径。
+const todayKey = formatDateToYYYYMMDD(now);
+const today = new Date(`${todayKey}T00:00:00Z`);
 // 本周周一
 const monday = new Date(today);
 monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
@@ -37,7 +42,7 @@ for (let w = 0; w < 52; w++) {
 	const col: { date: Date; count: number }[] = [];
 	for (let d = 0; d < 7; d++) {
 		const date = new Date(start.getTime() + (w * 7 + d) * dayMs);
-		const key = date.toISOString().slice(0, 10);
+		const key = formatDateToYYYYMMDD(date);
 		col.push({ date, count: countByDate.get(key) ?? 0 });
 	}
 	weeks.push(col);
@@ -53,7 +58,8 @@ const categories = new Set(
 );
 const tags = new Set(posts.flatMap((p) => p.data.tags ?? []));
 const yearPosts = posts.filter(
-	(p) => p.data.published.getFullYear() === now.getFullYear(),
+	(p) =>
+		formatDateToYYYYMMDD(p.data.published).slice(0, 4) === todayKey.slice(0, 4),
 );
 const yearChars = yearPosts.reduce(
 	(n, p) => n + stripMd(p.body ?? "").length,
@@ -140,7 +146,7 @@ const catDist = [...catCount.entries()].sort((a, b) => b[1] - a[1]);
 									rx="3"
 									fill={l === 0 ? "var(--btn-regular-bg)" : `color-mix(in srgb, var(--sakura) ${LEVEL_ALPHA[l] * 100}%, var(--card-bg))`}
 								>
-									<title>{`${cell.date.toISOString().slice(0, 10)} · ${cell.count} 篇`}</title>
+									<title>{`${formatDateToYYYYMMDD(cell.date)} · ${cell.count} 篇`}</title>
 								</rect>
 							);
 						}),
@@ -185,7 +191,7 @@ const catDist = [...catCount.entries()].sort((a, b) => b[1] - a[1]);
 					<div
 						class="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-60 pointer-events-none hero-blob"
 					></div>
-					<div class="font-bold text-90 mb-4">{now.getFullYear()} 年度报告</div>
+					<div class="font-bold text-90 mb-4">{todayKey.slice(0, 4)} 年度报告</div>
 					<div class="flex gap-8 mb-5">
 						<div>
 							<div class="text-3xl font-bold text-[var(--sakura)] tabular-nums">

@@ -1,7 +1,7 @@
 /**
  * 天气 × 昼夜场景判定（docs/03 P1-2）
  * 数据源 Open-Meteo（免 key）；定位：浏览器授权 → IP 粗定位 → 纯时间降级。
- * 结果缓存 localStorage 30 分钟。
+ * 场景结果缓存 localStorage 30 分钟；坐标独立缓存 6 小时（定位次数大幅减少）。
  */
 
 export type SkyPeriod = "dawn" | "day" | "dusk" | "night";
@@ -20,6 +20,8 @@ export interface SceneState {
 
 const CACHE_KEY = "fx-scene-v1";
 const CACHE_TTL = 30 * 60 * 1000;
+const COORDS_KEY = "fx-coords-v1";
+const COORDS_TTL = 6 * 60 * 60 * 1000;
 
 const PERIOD_CN: Record<SkyPeriod, string> = {
 	dawn: "黎明",
@@ -116,6 +118,13 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 	]);
 }
 
+/** 带中止的 fetch：超时后真正中断底层请求，而不是挂在后台 */
+function fetchWithTimeout(url: string, ms: number): Promise<Response> {
+	const ctrl = new AbortController();
+	const timer = setTimeout(() => ctrl.abort(), ms);
+	return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 function geolocate(ms: number): Promise<{ lat: number; lon: number }> {
 	return withTimeout(
 		new Promise((resolve, reject) => {
@@ -135,7 +144,7 @@ function geolocate(ms: number): Promise<{ lat: number; lon: number }> {
 }
 
 async function ipLocate(ms: number): Promise<{ lat: number; lon: number }> {
-	const r = await withTimeout(fetch("https://ipapi.co/json/"), ms);
+	const r = await fetchWithTimeout("https://ipapi.co/json/", ms);
 	if (!r.ok) throw new Error("ipapi failed");
 	const data = (await r.json()) as { latitude?: number; longitude?: number };
 	if (typeof data.latitude !== "number" || typeof data.longitude !== "number")
@@ -180,26 +189,56 @@ function readCache(): SceneState | null {
 	}
 }
 
+/** 坐标缓存：定位结果比天气稳定得多，放 6 小时，减少反复 geolocate/ipapi */
+function readCoords(): { lat: number; lon: number } | null {
+	try {
+		const raw = localStorage.getItem(COORDS_KEY);
+		if (!raw) return null;
+		const { ts, coords } = JSON.parse(raw) as {
+			ts: number;
+			coords: { lat: number; lon: number };
+		};
+		if (Date.now() - ts > COORDS_TTL) return null;
+		return coords;
+	} catch {
+		return null;
+	}
+}
+
+function writeCoords(coords: { lat: number; lon: number }): void {
+	try {
+		localStorage.setItem(
+			COORDS_KEY,
+			JSON.stringify({ ts: Date.now(), coords }),
+		);
+	} catch {
+		/* 存不进就算了 */
+	}
+}
+
 export async function fetchScene(enableWeather: boolean): Promise<SceneState> {
 	if (!enableWeather) return fallbackScene();
 	const cached = readCache();
 	if (cached) return cached;
 
-	let coords: { lat: number; lon: number } | null = null;
-	try {
-		coords = await geolocate(3000);
-	} catch {
+	let coords = readCoords();
+	if (!coords) {
 		try {
-			coords = await ipLocate(3000);
+			coords = await geolocate(3000);
 		} catch {
-			coords = null;
+			try {
+				coords = await ipLocate(3000);
+			} catch {
+				coords = null;
+			}
 		}
+		if (coords) writeCoords(coords);
 	}
 	if (!coords) return fallbackScene();
 
 	try {
 		const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat.toFixed(3)}&longitude=${coords.lon.toFixed(3)}&current_weather=true`;
-		const r = await withTimeout(fetch(url), 5000);
+		const r = await fetchWithTimeout(url, 5000);
 		if (!r.ok) throw new Error("open-meteo failed");
 		const data = (await r.json()) as {
 			current_weather?: { weathercode?: number };

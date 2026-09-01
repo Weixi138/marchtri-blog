@@ -45,7 +45,7 @@ const SEASON_TINT: Record<Season, RGB> = {
 	winter: [143, 154, 232],
 };
 
-const TINT_K = 0.1; // 混入比例：保持品牌基调，仅做季节微染
+const TINT_K = 0.16; // 混入比例：四季差异肉眼可辨，仍不抢品牌基调
 function mixPalette(p: Palette, season: Season): Palette {
 	const t = SEASON_TINT[season];
 	const mix = (c: RGB): RGB => [

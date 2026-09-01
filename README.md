@@ -28,10 +28,10 @@ pnpm build      # 产物 dist/
 - 设计与架构文档：`docs/`（01 视觉规范 / 02 架构与性能预算 / 03 功能清单 / 05 部署指南）
 - AI 协作约定：`AGENTS.md`
 
-## 部署（Cloudflare Pages）
+## 部署（Cloudflare Workers）
 
 ```bash
-node scripts/deploy.mjs        # wrangler 直部，首次需 wrangler login
+pnpm deploy                   # node scripts/deploy.mjs，wrangler 直部，首次需 wrangler login
 ```
 
 或推 GitHub 后在 Cloudflare 控制台连接仓库自动构建（构建命令 `pnpm build`，输出 `dist`）。详见 `docs/05-部署指南.md`。

@@ -8,6 +8,25 @@
 import { featureConfig, siteConfig } from "../config";
 
 const petals = [0, 72, 144, 216, 288];
+
+// 季节词（V4）：构建期按月份取默认值，运行期由内联脚本校正
+const seasonWords: Record<string, string> = {
+	spring: "樱吹雪",
+	summer: "蝉时雨",
+	autumn: "枫时雨",
+	winter: "雪见夜",
+};
+const m0 = new Date().getMonth() + 1;
+const seasonWord =
+	seasonWords[
+		m0 >= 3 && m0 <= 5
+			? "spring"
+			: m0 >= 6 && m0 <= 8
+				? "summer"
+				: m0 >= 9 && m0 <= 11
+					? "autumn"
+					: "winter"
+	];
 ---
 {featureConfig.loadingScreen && (
 	<div id="fx-loader" aria-hidden="true">
@@ -16,7 +35,7 @@ const petals = [0, 72, 144, 216, 288];
 			<svg class="fx-loader-flower" viewBox="0 0 120 120">
 				<defs>
 					<linearGradient id="fxlf-petal" x1="0" y1="0" x2="1" y2="1">
-						<stop offset="0" style="stop-color: var(--sakura)" />
+						<stop offset="0" style="stop-color: var(--season-tint)" />
 						<stop offset="1" style="stop-color: var(--murasaki)" />
 					</linearGradient>
 					<radialGradient id="fxlf-core" cx="0.4" cy="0.35" r="1">
@@ -40,6 +59,7 @@ const petals = [0, 72, 144, 216, 288];
 				<circle class="fxlf-dot" cx="56" cy="55" r="3.4" style="fill: var(--stroke-glass)" />
 			</svg>
 			<div class="fx-loader-title">{siteConfig.title}</div>
+			<div class="fx-loader-season" id="fx-loader-season">{seasonWord}</div>
 			<div class="fx-loader-bar"><i></i></div>
 		</div>
 	</div>
@@ -54,6 +74,25 @@ const petals = [0, 72, 144, 216, 288];
 				"(prefers-reduced-motion: reduce)",
 			).matches;
 			var gone = false;
+
+			// 季节词按访客当前月份校正
+			var seasonWords = {
+				spring: "樱吹雪",
+				summer: "蝉时雨",
+				autumn: "枫时雨",
+				winter: "雪见夜",
+			};
+			var m = new Date().getMonth() + 1;
+			var season =
+				m >= 3 && m <= 5
+					? "spring"
+					: m >= 6 && m <= 8
+						? "summer"
+						: m >= 9 && m <= 11
+							? "autumn"
+							: "winter";
+			var seasonEl = document.getElementById("fx-loader-season");
+			if (seasonEl) seasonEl.textContent = seasonWords[season];
 
 			function dismiss() {
 				if (gone) return;
@@ -98,7 +137,7 @@ const petals = [0, 72, 144, 216, 288];
 		align-items: center;
 		justify-content: center;
 		background:
-			radial-gradient(60% 50% at 28% 22%, color-mix(in srgb, var(--sakura) 16%, transparent), transparent 60%),
+			radial-gradient(60% 50% at 28% 22%, color-mix(in srgb, var(--season-tint) 16%, transparent), transparent 60%),
 			radial-gradient(52% 46% at 74% 80%, color-mix(in srgb, var(--murasaki) 18%, transparent), transparent 60%),
 			var(--loader-bg);
 	}
@@ -113,7 +152,7 @@ const petals = [0, 72, 144, 216, 288];
 		border-radius: 50%;
 		background: radial-gradient(
 			closest-side,
-			color-mix(in srgb, var(--sakura) 16%, transparent),
+			color-mix(in srgb, var(--season-tint) 16%, transparent),
 			transparent 70%
 		);
 		animation: fx-loader-halo 3s ease-in-out;
@@ -128,7 +167,7 @@ const petals = [0, 72, 144, 216, 288];
 	.fx-loader-flower {
 		width: 104px;
 		height: 104px;
-		filter: drop-shadow(0 10px 30px color-mix(in srgb, var(--sakura) 50%, transparent));
+		filter: drop-shadow(0 10px 30px color-mix(in srgb, var(--season-tint) 50%, transparent));
 	}
 	.fxlf-spin {
 		transform-box: view-box;
@@ -150,11 +189,20 @@ const petals = [0, 72, 144, 216, 288];
 		font-weight: 700;
 		letter-spacing: 0.22em;
 		text-indent: 0.22em; /* 抵消末字 spacing，保持视觉居中 */
-		background: linear-gradient(120deg, var(--sakura), var(--murasaki));
+		background: linear-gradient(120deg, var(--season-tint), var(--murasaki));
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
 		animation: fx-loader-rise 0.8s ease 0.25s both;
+	}
+	.fx-loader-season {
+		font-size: 0.8rem;
+		font-weight: 500;
+		letter-spacing: 0.5em;
+		text-indent: 0.5em; /* 抵消末字 spacing，保持视觉居中 */
+		color: var(--season-tint);
+		opacity: 0.85;
+		animation: fx-loader-rise 0.8s ease 0.35s both;
 	}
 	.fx-loader-bar {
 		position: relative;
@@ -170,7 +218,7 @@ const petals = [0, 72, 144, 216, 288];
 		height: 100%;
 		width: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, var(--sakura), var(--murasaki));
+		background: linear-gradient(90deg, var(--season-tint), var(--murasaki));
 		transform-origin: left;
 		animation: fx-loader-fill 2.55s cubic-bezier(0.65, 0, 0.35, 1) 0.45s both;
 	}

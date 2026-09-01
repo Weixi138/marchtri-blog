@@ -1,5 +1,5 @@
 {
-  "name": "fuwari",
+  "name": "marchtri-blog",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -7,6 +7,7 @@
     "start": "astro dev",
     "check": "astro check",
     "build": "astro build",
+    "deploy": "node scripts/deploy.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
@@ -70,7 +71,8 @@
     "@types/mdast": "^4.0.4",
     "@types/sanitize-html": "^2.16.0",
     "postcss-import": "^16.1.1",
-    "postcss-nesting": "^13.0.2"
+    "postcss-nesting": "^13.0.2",
+    "wrangler": "^4.127.1"
   },
   "packageManager": "pnpm@9.14.4"
 }

@@ -115,11 +115,19 @@ export type FeatureConfig = {
 	photoWall: boolean;
 	autoRefresh: boolean;
 	devGuard: boolean;
+	adminPanel: boolean;
 };
 
 export type HeroConfig = {
 	greeting: string;
 	typewriterLines: string[];
+	/** 四季主题：徽标词 + 打字机台词（按 html[data-season] 选取） */
+	seasonNotes?: Partial<
+		Record<
+			"spring" | "summer" | "autumn" | "winter",
+			{ tag: string; line: string }
+		>
+	>;
 };
 
 export type MusicTrack = {
@@ -129,9 +137,9 @@ export type MusicTrack = {
 };
 
 export type MusicConfig = {
-	/** 网易云音乐歌单 ID：填了优先渲染网易云官方外链播放器 */
+	/** 网易云音乐歌单 ID：填了则构建期拉取曲目列表（外链直链）作为默认音源 */
 	neteasePlaylistId: string;
-	/** 本地歌单（public/music/），播放时驱动音频律动 */
+	/** 本地歌单（public/music/）：恒并入播放列表尾部，作外链全挂时的兜底，播放时驱动音频律动 */
 	playlist: MusicTrack[];
 	defaultVolume: number; // 0 - 1
 };

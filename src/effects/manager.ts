@@ -4,6 +4,8 @@
  * prefers-reduced-motion 时只画一次静态帧。
  * 音频能量等共享状态统一走 `fxState`，图层只读。
  */
+import type { Season } from "./weather";
+
 export interface FXLayer {
 	name: string;
 	/** false 时跳过 tick（供命令面板动态开关特效） */
@@ -19,7 +21,11 @@ export interface FXLayer {
 }
 
 /** 全局共享状态：图层只读，外部（如音乐播放器）经 manager 写入 */
-export const fxState = { audioEnergy: 0 };
+export const fxState = {
+	audioEnergy: 0,
+	season: "spring" as Season,
+	night: false,
+};
 
 export class FXManager {
 	private canvas: HTMLCanvasElement;

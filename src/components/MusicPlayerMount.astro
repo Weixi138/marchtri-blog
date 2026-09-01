@@ -83,9 +83,13 @@ if (featureConfig.musicPlayer && musicConfig.neteasePlaylistId) {
 	const fresh = await fetchNeteaseTracks(musicConfig.neteasePlaylistId);
 	if (fresh) {
 		writeCache(fresh);
-		playlist = fresh;
+		// 本地音景恒并入列表尾部：外链单曲失效自动跳过，全挂后自然播到本地 wav 兜底
+		playlist = [...fresh, ...musicConfig.playlist];
 	} else {
-		playlist = readCache() ?? musicConfig.playlist;
+		const cached = readCache();
+		playlist = cached
+			? [...cached, ...musicConfig.playlist]
+			: musicConfig.playlist;
 	}
 }
 ---
